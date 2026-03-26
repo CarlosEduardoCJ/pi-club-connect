@@ -1,0 +1,47 @@
+import { useClubs } from '@/hooks/useSupabaseData';
+import ClubCard from '@/components/ClubCard';
+import { Search } from 'lucide-react';
+import { useState } from 'react';
+
+const HomeScreen = () => {
+  const [search, setSearch] = useState('');
+  const { data: clubs, isLoading } = useClubs();
+
+  const filteredClubs = (clubs || []).filter(c =>
+    c.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <div className="min-h-screen bg-background pb-20">
+      <header className="bg-primary text-primary-foreground py-4 px-6 sticky top-0 z-10">
+        <h1 className="text-xl font-extrabold text-center tracking-tight">PI_Club</h1>
+      </header>
+
+      <main className="max-w-4xl mx-auto p-6">
+        <div className="relative mb-6">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Buscar clubes..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full bg-card rounded-[var(--radius)] pl-10 pr-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-accent/30 transition-shadow"
+            style={{ boxShadow: 'var(--shadow-card)' }}
+          />
+        </div>
+
+        {isLoading ? (
+          <div className="text-center text-muted-foreground py-12">Carregando clubes...</div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {filteredClubs.map((club, i) => (
+              <ClubCard key={club.id} club={club} index={i} />
+            ))}
+          </div>
+        )}
+      </main>
+    </div>
+  );
+};
+
+export default HomeScreen;

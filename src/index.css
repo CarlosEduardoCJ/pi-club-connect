@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* PI_Club Design System — Piauí Coast & Cashew */
+    --background: 40 33% 96%;        /* #F7F5F0 Areia */
+    --foreground: 210 38% 16%;       /* #1A2B3C Navy */
+
+    --card: 0 0% 100%;               /* #FFFFFF */
+    --card-foreground: 210 38% 16%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 38% 16%;
+
+    --primary: 201 85% 30%;          /* #0A5C90 Azul Litoral */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 153 42% 30%;        /* #2D6A4F Verde Caju */
+    --secondary-foreground: 0 0% 100%;
+
+    --accent: 22 95% 46%;            /* #E85D04 Laranja Caju */
+    --accent-foreground: 0 0% 100%;
+
+    --muted: 40 20% 90%;
+    --muted-foreground: 210 20% 46%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 40 20% 88%;
+    --input: 40 20% 88%;
+    --ring: 201 85% 30%;
+
+    --radius: 1.25rem;
+
+    --sidebar-background: 40 33% 96%;
+    --sidebar-foreground: 210 38% 16%;
+    --sidebar-primary: 201 85% 30%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 40 20% 90%;
+    --sidebar-accent-foreground: 210 38% 16%;
+    --sidebar-border: 40 20% 88%;
+    --sidebar-ring: 201 85% 30%;
+
+    --shadow-card: 0 4px 20px -4px hsl(210 38% 16% / 0.08);
+    --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+  }
+}
