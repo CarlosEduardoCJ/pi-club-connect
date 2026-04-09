@@ -5,22 +5,22 @@
 @layer base {
   :root {
     /* PI_Club Design System — Piauí Coast & Cashew */
-    --background: 40 33% 96%;        /* #F7F5F0 Areia */
-    --foreground: 210 38% 16%;       /* #1A2B3C Navy */
+    --background: 40 33% 96%;
+    --foreground: 210 38% 16%;
 
-    --card: 0 0% 100%;               /* #FFFFFF */
+    --card: 0 0% 100%;
     --card-foreground: 210 38% 16%;
 
     --popover: 0 0% 100%;
     --popover-foreground: 210 38% 16%;
 
-    --primary: 201 85% 30%;          /* #0A5C90 Azul Litoral */
+    --primary: 201 85% 30%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 153 42% 30%;        /* #2D6A4F Verde Caju */
+    --secondary: 153 42% 30%;
     --secondary-foreground: 0 0% 100%;
 
-    --accent: 22 95% 46%;            /* #E85D04 Laranja Caju */
+    --accent: 22 95% 46%;
     --accent-foreground: 0 0% 100%;
 
     --muted: 40 20% 90%;
@@ -46,6 +46,38 @@
 
     --shadow-card: 0 4px 20px -4px hsl(210 38% 16% / 0.08);
     --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+  }
+
+  .dark {
+    --background: 220 20% 10%;
+    --foreground: 40 20% 92%;
+
+    --card: 220 18% 14%;
+    --card-foreground: 40 20% 92%;
+
+    --popover: 220 18% 14%;
+    --popover-foreground: 40 20% 92%;
+
+    --primary: 201 75% 42%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 153 35% 38%;
+    --secondary-foreground: 0 0% 100%;
+
+    --accent: 22 90% 52%;
+    --accent-foreground: 0 0% 100%;
+
+    --muted: 220 15% 20%;
+    --muted-foreground: 220 15% 60%;
+
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 15% 22%;
+    --input: 220 15% 22%;
+    --ring: 201 75% 42%;
+
+    --shadow-card: 0 4px 20px -4px hsl(0 0% 0% / 0.3);
   }
 }
 
