@@ -1,13 +1,12 @@
-// Componente de navegação inferior estilo app mobile.
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Newspaper, MessageCircle, CalendarDays, Bell, User } from 'lucide-react';
+import { Home, Newspaper, Search, MessageCircle, CalendarDays, User } from 'lucide-react';
 
 const tabs = [
   { path: '/', icon: Home, label: 'Início' },
   { path: '/feed', icon: Newspaper, label: 'Feed' },
+  { path: '/search', icon: Search, label: 'Buscar' },
   { path: '/chat', icon: MessageCircle, label: 'Chat' },
   { path: '/events', icon: CalendarDays, label: 'Eventos' },
-  { path: '/notifications', icon: Bell, label: 'Alertas' },
   { path: '/profile', icon: User, label: 'Perfil' },
 ];
 
@@ -23,7 +22,7 @@ const BottomNav = () => {
             <Link
               key={tab.path}
               to={tab.path}
-              className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg transition-colors ${
+              className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition-colors ${
                 isActive
                   ? 'text-accent'
                   : 'text-muted-foreground hover:text-foreground'
