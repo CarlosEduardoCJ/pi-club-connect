@@ -3,7 +3,7 @@ import { useProfile, useProfileClubs, usePosts } from '@/hooks/useSupabaseData';
 import { useAuth } from '@/hooks/useAuth';
 import PostCard from '@/components/PostCard';
 import EditProfileDialog from '@/components/EditProfileDialog';
-import { Settings, Edit3, LogOut } from 'lucide-react';
+import { Settings, Edit3 } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -12,7 +12,7 @@ import { Link } from 'react-router-dom';
 const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').slice(0, 2);
 
 const ProfileScreen = () => {
-  const { profileId, signOut } = useAuth();
+  const { profileId } = useAuth();
   const [editOpen, setEditOpen] = useState(false);
   const { data: user, isLoading: loadingUser } = useProfile(profileId || '');
   const { data: memberships } = useProfileClubs(profileId || '');
