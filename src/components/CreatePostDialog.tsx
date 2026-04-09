@@ -17,7 +17,8 @@ const CreatePostDialog = () => {
   const [content, setContent] = useState('');
   const [clubId, setClubId] = useState('');
   const [loading, setLoading] = useState(false);
-  const { profileId, profile } = useAuth();
+  const { profileId } = useAuth();
+  const { data: profileData } = useProfile(profileId || '');
   const { data: myClubs } = useProfileClubs(profileId || '');
   const queryClient = useQueryClient();
 
