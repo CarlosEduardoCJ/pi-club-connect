@@ -8,15 +8,20 @@ const FeedScreen = () => {
   return (
     <div className="min-h-screen bg-background pb-20">
       <header className="bg-primary text-primary-foreground py-4 px-6 sticky top-0 z-10">
-        <div className="max-w-lg mx-auto flex items-center justify-between">
+        <div className="max-w-lg mx-auto">
           <h1 className="text-xl font-extrabold tracking-tight">Feed</h1>
-          <CreatePostDialog />
         </div>
       </header>
 
       <main className="max-w-lg mx-auto p-4 flex flex-col gap-4">
+        <CreatePostDialog />
+
         {isLoading ? (
           <div className="text-center text-muted-foreground py-12">Carregando posts...</div>
+        ) : (posts || []).length === 0 ? (
+          <div className="text-center text-muted-foreground py-12">
+            Nenhum post ainda. Seja o primeiro a compartilhar!
+          </div>
         ) : (
           (posts || []).map((post, i) => (
             <PostCard
