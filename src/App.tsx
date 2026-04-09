@@ -32,8 +32,8 @@ const ProtectedRoutes = () => {
     return <Navigate to="/auth" replace />;
   }
 
-  const location = window.location.pathname;
-  const hiddenBottomNav = location.startsWith('/chat/');
+  const location = useLocation();
+  const hiddenBottomNav = location.pathname.startsWith('/chat/');
 
   return (
     <>
