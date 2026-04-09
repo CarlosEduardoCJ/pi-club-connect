@@ -20,6 +20,18 @@ const ChatRoomScreen = () => {
 
   const room = (rooms || []).find(r => r.id === roomId);
 
+  // Realtime subscription for new messages
+  useEffect(() => {
+    if (!roomId) return;
+    const channel = supabase
+      .channel(`chat-${roomId}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `room_id=eq.${roomId}` }, () => {
+        queryClient.invalidateQueries({ queryKey: ['chat-messages', roomId] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [roomId, queryClient]);
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
