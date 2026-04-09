@@ -38,6 +38,17 @@ const ClubDetailScreen = () => {
     } else {
       const { error } = await supabase.from('club_members').insert({ club_id: id, profile_id: profileId });
       if (error) { toast.error('Erro ao entrar no clube'); setJoining(false); return; }
+      // Auto-create chat room for club if it doesn't exist
+      const { data: existingRoom } = await supabase.from('chat_rooms').select('id').eq('club_id', id).maybeSingle();
+      if (!existingRoom && club) {
+        await supabase.from('chat_rooms').insert({
+          name: `${club.name} - Chat`,
+          type: 'club',
+          club_id: id,
+          icon: club.icon,
+        });
+      }
+      queryClient.invalidateQueries({ queryKey: ['chat-rooms'] });
       toast.success('Você entrou no clube!');
     }
     queryClient.invalidateQueries({ queryKey: ['club-members', id] });

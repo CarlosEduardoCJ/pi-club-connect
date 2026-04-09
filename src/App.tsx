@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
@@ -32,6 +32,9 @@ const ProtectedRoutes = () => {
     return <Navigate to="/auth" replace />;
   }
 
+  const location = useLocation();
+  const hiddenBottomNav = location.pathname.startsWith('/chat/');
+
   return (
     <>
       <Routes>
@@ -45,7 +48,7 @@ const ProtectedRoutes = () => {
         <Route path="/club/:id" element={<ClubDetailScreen />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
-      <BottomNav />
+      {!hiddenBottomNav && <BottomNav />}
     </>
   );
 };

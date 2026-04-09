@@ -55,6 +55,7 @@ export type Database = {
       }
       chat_rooms: {
         Row: {
+          club_id: string | null
           created_at: string
           icon: string | null
           id: string
@@ -64,6 +65,7 @@ export type Database = {
           type: string
         }
         Insert: {
+          club_id?: string | null
           created_at?: string
           icon?: string | null
           id?: string
@@ -73,6 +75,7 @@ export type Database = {
           type: string
         }
         Update: {
+          club_id?: string | null
           created_at?: string
           icon?: string | null
           id?: string
@@ -81,7 +84,15 @@ export type Database = {
           name?: string
           type?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "chat_rooms_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       club_members: {
         Row: {
