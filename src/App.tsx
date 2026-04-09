@@ -32,6 +32,9 @@ const ProtectedRoutes = () => {
     return <Navigate to="/auth" replace />;
   }
 
+  const location = window.location.pathname;
+  const hiddenBottomNav = location.startsWith('/chat/');
+
   return (
     <>
       <Routes>
@@ -45,7 +48,7 @@ const ProtectedRoutes = () => {
         <Route path="/club/:id" element={<ClubDetailScreen />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
-      <BottomNav />
+      {!hiddenBottomNav && <BottomNav />}
     </>
   );
 };
