@@ -31,44 +31,44 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const timeout = setTimeout(() => setLoading(false), 5000);
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
 
         if (session?.user) {
-          try {
-            const { data } = await supabase
-              .from('profiles')
-              .select('id')
-              .eq('user_id', session.user.id)
-              .single();
-            setProfileId(data?.id ?? null);
-          } catch {
-            setProfileId(null);
-          }
-        } else {
-          setProfileId(null);
-        }
-        setLoading(false);
-      }
-    );
-
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        try {
-          const { data } = await supabase
+          // Non-blocking profile fetch
+          supabase
             .from('profiles')
             .select('id')
             .eq('user_id', session.user.id)
-            .single();
-          setProfileId(data?.id ?? null);
-        } catch {
-          // ignore
+            .maybeSingle()
+            .then(({ data }) => {
+              setProfileId(data?.id ?? null);
+              setLoading(false);
+            });
+        } else {
+          setProfileId(null);
+          setLoading(false);
         }
       }
-      setLoading(false);
+    );
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        supabase
+          .from('profiles')
+          .select('id')
+          .eq('user_id', session.user.id)
+          .maybeSingle()
+          .then(({ data }) => {
+            setProfileId(data?.id ?? null);
+            setLoading(false);
+          });
+      } else {
+        setLoading(false);
+      }
     }).catch(() => setLoading(false));
 
     return () => {
