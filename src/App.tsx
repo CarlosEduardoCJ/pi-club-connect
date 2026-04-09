@@ -43,6 +43,7 @@ const ProtectedRoutes = () => {
       <Routes>
         <Route path="/" element={<HomeScreen />} />
         <Route path="/feed" element={<FeedScreen />} />
+        <Route path="/search" element={<SearchScreen />} />
         <Route path="/events" element={<EventsScreen />} />
         <Route path="/notifications" element={<NotificationsScreen />} />
         <Route path="/profile" element={<ProfileScreen />} />
