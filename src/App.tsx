@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes, Navigate, useLocation } from "react-route
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { ThemeProvider } from "@/hooks/useTheme";
 import BottomNav from "./components/BottomNav";
 import HomeScreen from "./screens/HomeScreen";
 import ClubDetailScreen from "./screens/ClubDetailScreen";
@@ -10,6 +11,7 @@ import FeedScreen from "./screens/FeedScreen";
 import EventsScreen from "./screens/EventsScreen";
 import NotificationsScreen from "./screens/NotificationsScreen";
 import ProfileScreen from "./screens/ProfileScreen";
+import SettingsScreen from "./screens/SettingsScreen";
 import ChatListScreen from "./screens/ChatListScreen";
 import ChatRoomScreen from "./screens/ChatRoomScreen";
 import AuthScreen from "./screens/AuthScreen";
@@ -33,7 +35,7 @@ const ProtectedRoutes = () => {
   }
 
   const location = useLocation();
-  const hiddenBottomNav = location.pathname.startsWith('/chat/');
+  const hideBottomNav = location.pathname.startsWith('/chat/') || location.pathname === '/settings';
 
   return (
     <>
@@ -43,12 +45,13 @@ const ProtectedRoutes = () => {
         <Route path="/events" element={<EventsScreen />} />
         <Route path="/notifications" element={<NotificationsScreen />} />
         <Route path="/profile" element={<ProfileScreen />} />
+        <Route path="/settings" element={<SettingsScreen />} />
         <Route path="/chat" element={<ChatListScreen />} />
         <Route path="/chat/:roomId" element={<ChatRoomScreen />} />
         <Route path="/club/:id" element={<ClubDetailScreen />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
-      {!hiddenBottomNav && <BottomNav />}
+      {!hideBottomNav && <BottomNav />}
     </>
   );
 };
@@ -77,14 +80,16 @@ const AppRoutes = () => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <AppRoutes />
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
+    <ThemeProvider>
+      <TooltipProvider>
+        <Sonner />
+        <BrowserRouter>
+          <AuthProvider>
+            <AppRoutes />
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

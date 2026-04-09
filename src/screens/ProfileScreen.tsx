@@ -3,7 +3,7 @@ import { useProfile, useProfileClubs, usePosts } from '@/hooks/useSupabaseData';
 import { useAuth } from '@/hooks/useAuth';
 import PostCard from '@/components/PostCard';
 import EditProfileDialog from '@/components/EditProfileDialog';
-import { Settings, Edit3, LogOut } from 'lucide-react';
+import { Settings, Edit3 } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -12,7 +12,7 @@ import { Link } from 'react-router-dom';
 const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').slice(0, 2);
 
 const ProfileScreen = () => {
-  const { profileId, signOut } = useAuth();
+  const { profileId } = useAuth();
   const [editOpen, setEditOpen] = useState(false);
   const { data: user, isLoading: loadingUser } = useProfile(profileId || '');
   const { data: memberships } = useProfileClubs(profileId || '');
@@ -34,15 +34,12 @@ const ProfileScreen = () => {
       <header className="bg-primary text-primary-foreground py-4 px-6 sticky top-0 z-10">
         <div className="max-w-lg mx-auto flex items-center justify-between">
           <h1 className="text-xl font-extrabold tracking-tight">Perfil</h1>
-          <button className="w-9 h-9 rounded-full bg-primary-foreground/10 flex items-center justify-center hover:bg-primary-foreground/20 transition-colors">
-            <Settings className="w-4 h-4" />
-          </button>
-          <button
-            onClick={signOut}
-            className="w-9 h-9 rounded-full bg-destructive/20 flex items-center justify-center hover:bg-destructive/30 transition-colors"
+          <Link
+            to="/settings"
+            className="w-9 h-9 rounded-full bg-primary-foreground/10 flex items-center justify-center hover:bg-primary-foreground/20 transition-colors"
           >
-            <LogOut className="w-4 h-4" />
-          </button>
+            <Settings className="w-4 h-4" />
+          </Link>
         </div>
       </header>
 
@@ -55,8 +52,12 @@ const ProfileScreen = () => {
           style={{ boxShadow: 'var(--shadow-card)' }}
         >
           <div className="flex items-center gap-4 mb-4">
-            <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
-              <span className="text-2xl font-extrabold text-primary">{getInitials(user.name)}</span>
+            <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
+              {user.avatar ? (
+                <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-2xl font-extrabold text-primary">{getInitials(user.name)}</span>
+              )}
             </div>
             <div className="flex-1">
               <h2 className="text-lg font-bold text-foreground">{user.name}</h2>
@@ -136,7 +137,7 @@ const ProfileScreen = () => {
       <EditProfileDialog
         open={editOpen}
         onOpenChange={setEditOpen}
-        profile={{ id: user.id, name: user.name, bio: user.bio, grade: user.grade }}
+        profile={{ id: user.id, name: user.name, username: user.username, bio: user.bio || '', grade: user.grade || '', avatar: user.avatar || '' }}
       />
     </div>
   );
