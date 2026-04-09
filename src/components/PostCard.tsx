@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
 import CommentsSection from '@/components/CommentsSection';
 
 interface PostDisplay {
@@ -32,6 +33,7 @@ const timeAgo = (dateStr: string) => {
 
 const PostCard = ({ post, index }: { post: PostDisplay; index: number }) => {
   const { profileId } = useAuth();
+  const queryClient = useQueryClient();
   const [liked, setLiked] = useState(false);
   const [likes, setLikes] = useState(post.likesCount);
   const [commentsCount, setCommentsCount] = useState(post.commentsCount);
