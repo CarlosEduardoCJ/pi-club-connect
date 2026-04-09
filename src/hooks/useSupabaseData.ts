@@ -114,7 +114,7 @@ export const useChatRooms = () =>
     queryFn: async () => {
       const { data, error } = await supabase
         .from('chat_rooms')
-        .select('*')
+        .select('*, clubs(name, icon)')
         .order('last_message_time', { ascending: false });
       if (error) throw error;
       return data;
