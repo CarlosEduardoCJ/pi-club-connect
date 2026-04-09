@@ -47,7 +47,7 @@ const CreatePostDialog = () => {
     queryClient.invalidateQueries({ queryKey: ['posts'] });
   };
 
-  const userName = profile?.name || 'Usuário';
+  const userName = profileData?.name || 'Usuário';
 
   return (
     <>
