@@ -10,6 +10,7 @@ import ClubDetailScreen from "./screens/ClubDetailScreen";
 import FeedScreen from "./screens/FeedScreen";
 import EventsScreen from "./screens/EventsScreen";
 import NotificationsScreen from "./screens/NotificationsScreen";
+import SearchScreen from "./screens/SearchScreen";
 import ProfileScreen from "./screens/ProfileScreen";
 import SettingsScreen from "./screens/SettingsScreen";
 import ChatListScreen from "./screens/ChatListScreen";
@@ -42,6 +43,7 @@ const ProtectedRoutes = () => {
       <Routes>
         <Route path="/" element={<HomeScreen />} />
         <Route path="/feed" element={<FeedScreen />} />
+        <Route path="/search" element={<SearchScreen />} />
         <Route path="/events" element={<EventsScreen />} />
         <Route path="/notifications" element={<NotificationsScreen />} />
         <Route path="/profile" element={<ProfileScreen />} />
