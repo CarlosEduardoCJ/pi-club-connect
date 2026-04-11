@@ -142,19 +142,17 @@ const SearchScreen = () => {
                 className="bg-card rounded-[var(--radius)] p-4 flex items-center gap-3"
                 style={{ boxShadow: 'var(--shadow-card)' }}
               >
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden shrink-0">
-                  {user.avatar ? (
-                    <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-sm font-bold text-primary">{getInitials(user.name)}</span>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-foreground truncate">{user.name}</p>
-                  <p className="text-xs text-muted-foreground truncate">@{user.username}</p>
-                  {user.grade && (
-                    <p className="text-xs text-accent font-semibold">{user.grade}</p>
-                  )}
+                <div
+                  className="flex-1 min-w-0 cursor-pointer"
+                  onClick={() => navigate(`/user/${user.id}`)}
+                >
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden shrink-0 mb-0 inline-block align-middle mr-3">
+                    {user.avatar ? (
+                      <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-sm font-bold text-primary">{getInitials(user.name)}</span>
+                    )}
+                  </div>
                 </div>
                 <button
                   onClick={() => toggleFollow(user.id)}
