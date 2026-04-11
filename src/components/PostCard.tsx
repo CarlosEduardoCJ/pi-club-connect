@@ -86,7 +86,7 @@ const PostCard = ({ post, index }: { post: PostDisplay; index: number }) => {
         </div>
       </div>
 
-      <p className="text-sm text-foreground leading-relaxed mb-4">{post.content}</p>
+      <p className="text-sm text-foreground leading-relaxed mb-3">{post.content}</p>
 
       <div className="flex flex-wrap items-center gap-6 pt-2 border-t border-border">
         <button onClick={toggleLike} disabled={!profileId} className="flex items-center gap-1.5 text-sm transition-colors group">

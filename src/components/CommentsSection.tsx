@@ -23,9 +23,10 @@ const timeAgo = (dateStr: string) => {
   return `${Math.floor(hours / 24)}d`;
 };
 
-const CommentsSection = ({ postId, onCountChange }: { postId: string; onCountChange: (count: number) => void }) => {
+const CommentsSection = ({ postId, initialCount, onCountChange }: { postId: string; initialCount: number; onCountChange: (count: number) => void }) => {
   const [open, setOpen] = useState(false);
   const [comments, setComments] = useState<Comment[]>([]);
+  const [displayCount, setDisplayCount] = useState(initialCount);
   const [newComment, setNewComment] = useState('');
   const [sending, setSending] = useState(false);
   const { profileId } = useAuth();
