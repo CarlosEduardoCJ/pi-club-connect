@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').slice(0, 2);
 
@@ -19,6 +20,7 @@ interface ProfileResult {
 
 const SearchScreen = () => {
   const { profileId } = useAuth();
+  const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<ProfileResult[]>([]);
   const [loading, setLoading] = useState(false);
