@@ -39,6 +39,7 @@ const CommentsSection = ({ postId, initialCount, onCountChange }: { postId: stri
       .order('created_at', { ascending: true });
     if (data) {
       setComments(data as unknown as Comment[]);
+      setDisplayCount(data.length);
       onCountChange(data.length);
     }
   };

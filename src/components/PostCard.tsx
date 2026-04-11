@@ -93,7 +93,7 @@ const PostCard = ({ post, index }: { post: PostDisplay; index: number }) => {
           <Heart className={`w-4 h-4 transition-colors ${liked ? 'fill-accent text-accent' : 'text-muted-foreground group-hover:text-accent'}`} />
           <span className={liked ? 'text-accent font-semibold' : 'text-muted-foreground'}>{likes}</span>
         </button>
-        <CommentsSection postId={post.id} onCountChange={setCommentsCount} />
+        <CommentsSection postId={post.id} initialCount={post.commentsCount} onCountChange={setCommentsCount} />
         <button className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors ml-auto">
           <Share2 className="w-4 h-4" />
         </button>
