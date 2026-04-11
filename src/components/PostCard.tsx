@@ -9,6 +9,7 @@ import CommentsSection from '@/components/CommentsSection';
 
 interface PostDisplay {
   id: string;
+  authorId?: string;
   authorName: string;
   authorUsername: string;
   authorAvatar: string;
