@@ -28,6 +28,7 @@ const FeedScreen = () => {
               key={post.id}
               post={{
                 id: post.id,
+                authorId: post.author_id,
                 authorName: post.profiles?.name || '',
                 authorUsername: post.profiles?.username || '',
                 authorAvatar: post.profiles?.avatar || '',

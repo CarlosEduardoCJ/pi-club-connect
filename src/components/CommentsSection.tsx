@@ -23,9 +23,10 @@ const timeAgo = (dateStr: string) => {
   return `${Math.floor(hours / 24)}d`;
 };
 
-const CommentsSection = ({ postId, onCountChange }: { postId: string; onCountChange: (count: number) => void }) => {
+const CommentsSection = ({ postId, initialCount, onCountChange }: { postId: string; initialCount: number; onCountChange: (count: number) => void }) => {
   const [open, setOpen] = useState(false);
   const [comments, setComments] = useState<Comment[]>([]);
+  const [displayCount, setDisplayCount] = useState(initialCount);
   const [newComment, setNewComment] = useState('');
   const [sending, setSending] = useState(false);
   const { profileId } = useAuth();
@@ -38,6 +39,7 @@ const CommentsSection = ({ postId, onCountChange }: { postId: string; onCountCha
       .order('created_at', { ascending: true });
     if (data) {
       setComments(data as unknown as Comment[]);
+      setDisplayCount(data.length);
       onCountChange(data.length);
     }
   };
@@ -66,7 +68,7 @@ const CommentsSection = ({ postId, onCountChange }: { postId: string; onCountCha
     <>
       <button onClick={() => setOpen(!open)} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
         <MessageCircle className="w-4 h-4" />
-        <span>{comments.length || ''}</span>
+        <span>{displayCount || ''}</span>
       </button>
 
       <AnimatePresence>

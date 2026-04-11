@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').slice(0, 2);
 
@@ -19,6 +20,7 @@ interface ProfileResult {
 
 const SearchScreen = () => {
   const { profileId } = useAuth();
+  const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<ProfileResult[]>([]);
   const [loading, setLoading] = useState(false);
@@ -140,19 +142,20 @@ const SearchScreen = () => {
                 className="bg-card rounded-[var(--radius)] p-4 flex items-center gap-3"
                 style={{ boxShadow: 'var(--shadow-card)' }}
               >
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden shrink-0">
+                <div
+                  className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden shrink-0 cursor-pointer"
+                  onClick={() => navigate(`/user/${user.id}`)}
+                >
                   {user.avatar ? (
                     <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
                   ) : (
                     <span className="text-sm font-bold text-primary">{getInitials(user.name)}</span>
                   )}
                 </div>
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 cursor-pointer" onClick={() => navigate(`/user/${user.id}`)}>
                   <p className="text-sm font-bold text-foreground truncate">{user.name}</p>
                   <p className="text-xs text-muted-foreground truncate">@{user.username}</p>
-                  {user.grade && (
-                    <p className="text-xs text-accent font-semibold">{user.grade}</p>
-                  )}
+                  {user.grade && <p className="text-xs text-accent font-semibold">{user.grade}</p>}
                 </div>
                 <button
                   onClick={() => toggleFollow(user.id)}

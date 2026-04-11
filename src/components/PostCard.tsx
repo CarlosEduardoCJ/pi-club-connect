@@ -1,4 +1,5 @@
 import { Heart, Share2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
@@ -8,6 +9,7 @@ import CommentsSection from '@/components/CommentsSection';
 
 interface PostDisplay {
   id: string;
+  authorId?: string;
   authorName: string;
   authorUsername: string;
   authorAvatar: string;
@@ -34,6 +36,7 @@ const timeAgo = (dateStr: string) => {
 const PostCard = ({ post, index }: { post: PostDisplay; index: number }) => {
   const { profileId } = useAuth();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [liked, setLiked] = useState(false);
   const [likes, setLikes] = useState(post.likesCount);
   const [commentsCount, setCommentsCount] = useState(post.commentsCount);
@@ -73,9 +76,13 @@ const PostCard = ({ post, index }: { post: PostDisplay; index: number }) => {
       className="bg-card rounded-[var(--radius)] p-4"
       style={{ boxShadow: 'var(--shadow-card)' }}
     >
-      <div className="flex items-center gap-3 mb-3">
-        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-          <span className="text-sm font-bold text-primary">{getInitials(post.authorName)}</span>
+      <div className="flex items-center gap-3 mb-3 cursor-pointer" onClick={() => post.authorId && navigate(`/user/${post.authorId}`)}>
+        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
+          {post.authorAvatar ? (
+            <img src={post.authorAvatar} alt={post.authorName} className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-sm font-bold text-primary">{getInitials(post.authorName)}</span>
+          )}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
@@ -86,14 +93,14 @@ const PostCard = ({ post, index }: { post: PostDisplay; index: number }) => {
         </div>
       </div>
 
-      <p className="text-sm text-foreground leading-relaxed mb-4">{post.content}</p>
+      <p className="text-sm text-foreground leading-relaxed mb-3">{post.content}</p>
 
       <div className="flex flex-wrap items-center gap-6 pt-2 border-t border-border">
         <button onClick={toggleLike} disabled={!profileId} className="flex items-center gap-1.5 text-sm transition-colors group">
           <Heart className={`w-4 h-4 transition-colors ${liked ? 'fill-accent text-accent' : 'text-muted-foreground group-hover:text-accent'}`} />
           <span className={liked ? 'text-accent font-semibold' : 'text-muted-foreground'}>{likes}</span>
         </button>
-        <CommentsSection postId={post.id} onCountChange={setCommentsCount} />
+        <CommentsSection postId={post.id} initialCount={post.commentsCount} onCountChange={setCommentsCount} />
         <button className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors ml-auto">
           <Share2 className="w-4 h-4" />
         </button>

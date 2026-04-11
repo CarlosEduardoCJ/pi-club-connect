@@ -12,6 +12,7 @@ import EventsScreen from "./screens/EventsScreen";
 import NotificationsScreen from "./screens/NotificationsScreen";
 import SearchScreen from "./screens/SearchScreen";
 import ProfileScreen from "./screens/ProfileScreen";
+import UserProfileScreen from "./screens/UserProfileScreen";
 import SettingsScreen from "./screens/SettingsScreen";
 import ChatListScreen from "./screens/ChatListScreen";
 import ChatRoomScreen from "./screens/ChatRoomScreen";
@@ -50,6 +51,7 @@ const ProtectedRoutes = () => {
         <Route path="/settings" element={<SettingsScreen />} />
         <Route path="/chat" element={<ChatListScreen />} />
         <Route path="/chat/:roomId" element={<ChatRoomScreen />} />
+        <Route path="/user/:id" element={<UserProfileScreen />} />
         <Route path="/club/:id" element={<ClubDetailScreen />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
