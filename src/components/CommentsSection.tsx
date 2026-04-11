@@ -68,7 +68,7 @@ const CommentsSection = ({ postId, initialCount, onCountChange }: { postId: stri
     <>
       <button onClick={() => setOpen(!open)} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
         <MessageCircle className="w-4 h-4" />
-        <span>{comments.length || ''}</span>
+        <span>{displayCount || ''}</span>
       </button>
 
       <AnimatePresence>
