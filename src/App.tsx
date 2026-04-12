@@ -17,6 +17,7 @@ import SettingsScreen from "./screens/SettingsScreen";
 import ChatListScreen from "./screens/ChatListScreen";
 import ChatRoomScreen from "./screens/ChatRoomScreen";
 import AuthScreen from "./screens/AuthScreen";
+import AdminScreen from "./screens/AdminScreen";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,7 +38,7 @@ const ProtectedRoutes = () => {
   }
 
   const location = useLocation();
-  const hideBottomNav = location.pathname.startsWith('/chat/') || location.pathname === '/settings';
+  const hideBottomNav = location.pathname.startsWith('/chat/') || location.pathname === '/settings' || location.pathname === '/admin';
 
   return (
     <>
@@ -53,6 +54,7 @@ const ProtectedRoutes = () => {
         <Route path="/chat/:roomId" element={<ChatRoomScreen />} />
         <Route path="/user/:id" element={<UserProfileScreen />} />
         <Route path="/club/:id" element={<ClubDetailScreen />} />
+        <Route path="/admin" element={<AdminScreen />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       {!hideBottomNav && <BottomNav />}
