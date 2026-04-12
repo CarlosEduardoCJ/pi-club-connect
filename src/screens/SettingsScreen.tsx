@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, Sun, Moon, Monitor, Bell, Shield, HelpCircle, Info, ChevronRight, LogOut } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { useAuth } from '@/hooks/useAuth';
+import { useAdmin } from '@/hooks/useAdmin';
 import { motion } from 'framer-motion';
 
 const themeOptions = [
@@ -13,6 +14,7 @@ const themeOptions = [
 const SettingsScreen = () => {
   const { theme, setTheme } = useTheme();
   const { signOut } = useAuth();
+  const { isAdmin } = useAdmin();
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -68,11 +70,30 @@ const SettingsScreen = () => {
           <SettingsItem icon={Info} label="Sobre o App" description="Versão 1.0.0" last />
         </motion.section>
 
+        {/* Admin Panel */}
+        {isAdmin && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.2 }}
+          >
+            <Link
+              to="/admin"
+              className="w-full bg-card rounded-[var(--radius)] p-4 flex items-center gap-3 text-accent hover:bg-accent/5 transition-colors"
+              style={{ boxShadow: 'var(--shadow-card)' }}
+            >
+              <Shield className="w-5 h-5" />
+              <span className="text-sm font-bold">Painel Admin</span>
+              <ChevronRight className="w-4 h-4 ml-auto" />
+            </Link>
+          </motion.div>
+        )}
+
         {/* Logout */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.2 }}
+          transition={{ duration: 0.3, delay: isAdmin ? 0.3 : 0.2 }}
         >
           <button
             onClick={signOut}
