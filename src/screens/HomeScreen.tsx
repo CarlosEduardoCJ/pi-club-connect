@@ -1,7 +1,8 @@
 import { useClubs } from '@/hooks/useSupabaseData';
 import ClubCard from '@/components/ClubCard';
-import { Search } from 'lucide-react';
+import { Search, Trophy, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 const HomeScreen = () => {
   const [search, setSearch] = useState('');
@@ -29,6 +30,21 @@ const HomeScreen = () => {
             style={{ boxShadow: 'var(--shadow-card)' }}
           />
         </div>
+
+        <Link
+          to="/competitions"
+          className="flex items-center gap-3 bg-card rounded-[var(--radius)] p-4 mb-6 hover:bg-accent/5 transition-colors"
+          style={{ boxShadow: 'var(--shadow-card)' }}
+        >
+          <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
+            <Trophy className="w-6 h-6 text-accent" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-foreground">Competições Acadêmicas</p>
+            <p className="text-xs text-muted-foreground">Olimpíadas e desafios — inscreva-se</p>
+          </div>
+          <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
+        </Link>
 
         {isLoading ? (
           <div className="text-center text-muted-foreground py-12">Carregando clubes...</div>

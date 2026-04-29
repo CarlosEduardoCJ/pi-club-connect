@@ -154,6 +154,69 @@ export type Database = {
         }
         Relationships: []
       }
+      competition_registrations: {
+        Row: {
+          competition_id: string
+          created_at: string
+          id: string
+          profile_id: string
+        }
+        Insert: {
+          competition_id: string
+          created_at?: string
+          id?: string
+          profile_id: string
+        }
+        Update: {
+          competition_id?: string
+          created_at?: string
+          id?: string
+          profile_id?: string
+        }
+        Relationships: []
+      }
+      competitions: {
+        Row: {
+          club_id: string | null
+          created_at: string
+          date: string
+          description: string
+          id: string
+          location: string
+          name: string
+          registrants_count: number
+          registration_deadline: string | null
+          status: string
+          time: string
+        }
+        Insert: {
+          club_id?: string | null
+          created_at?: string
+          date: string
+          description?: string
+          id?: string
+          location?: string
+          name: string
+          registrants_count?: number
+          registration_deadline?: string | null
+          status?: string
+          time?: string
+        }
+        Update: {
+          club_id?: string | null
+          created_at?: string
+          date?: string
+          description?: string
+          id?: string
+          location?: string
+          name?: string
+          registrants_count?: number
+          registration_deadline?: string | null
+          status?: string
+          time?: string
+        }
+        Relationships: []
+      }
       event_attendees: {
         Row: {
           created_at: string
