@@ -2,20 +2,67 @@
 import { ClubEvent } from '@/models/social';
 import * as Icons from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { MapPin, Clock, Users, CalendarCheck } from 'lucide-react';
-import { useState } from 'react';
+import { MapPin, Users, CalendarCheck } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 const EventCard = ({ event, index }: { event: ClubEvent; index: number }) => {
-  const [attending, setAttending] = useState(event.isAttending);
+  const { profileId } = useAuth();
+  const [attending, setAttending] = useState(false);
   const [attendees, setAttendees] = useState(event.attendeesCount);
+  const [loading, setLoading] = useState(false);
   const ClubIcon = (Icons as unknown as Record<string, LucideIcon>)[event.clubIcon] || Icons.Circle;
 
-  const toggleAttend = () => {
-    setAttending(!attending);
-    setAttendees(prev => attending ? prev - 1 : prev + 1);
+  // Carrega o estado real de presença do banco
+  useEffect(() => {
+    if (!profileId) return;
+    supabase
+      .from('event_attendees')
+      .select('id')
+      .eq('event_id', event.id)
+      .eq('profile_id', profileId)
+      .maybeSingle()
+      .then(({ data }) => setAttending(!!data));
+  }, [profileId, event.id]);
+
+  // Mantém contador sincronizado se o prop mudar
+  useEffect(() => {
+    setAttendees(event.attendeesCount);
+  }, [event.attendeesCount]);
+
+  const toggleAttend = async () => {
+    if (!profileId || loading) return;
+    setLoading(true);
+
+    if (attending) {
+      const { error } = await supabase
+        .from('event_attendees')
+        .delete()
+        .eq('event_id', event.id)
+        .eq('profile_id', profileId);
+      if (error) {
+        toast.error('Erro ao cancelar presença');
+      } else {
+        setAttending(false);
+        setAttendees(prev => Math.max(0, prev - 1));
+      }
+    } else {
+      const { error } = await supabase
+        .from('event_attendees')
+        .insert({ event_id: event.id, profile_id: profileId });
+      if (error) {
+        toast.error('Erro ao confirmar presença');
+      } else {
+        setAttending(true);
+        setAttendees(prev => prev + 1);
+      }
+    }
+    setLoading(false);
   };
 
   const dateFormatted = format(parseISO(event.date), "dd 'de' MMM", { locale: ptBR });
@@ -62,7 +109,8 @@ const EventCard = ({ event, index }: { event: ClubEvent; index: number }) => {
         {/* CTA */}
         <button
           onClick={toggleAttend}
-          className={`w-full py-2.5 rounded-lg text-sm font-bold transition-all ${
+          disabled={loading || !profileId}
+          className={`w-full py-2.5 rounded-lg text-sm font-bold transition-all disabled:opacity-60 ${
             attending
               ? 'bg-secondary/10 text-secondary border border-secondary/30'
               : 'bg-accent text-accent-foreground hover:bg-accent/90'
