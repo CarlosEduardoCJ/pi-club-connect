@@ -18,6 +18,7 @@ import ChatListScreen from "./screens/ChatListScreen";
 import ChatRoomScreen from "./screens/ChatRoomScreen";
 import AuthScreen from "./screens/AuthScreen";
 import AdminScreen from "./screens/AdminScreen";
+import CompetitionsScreen from "./screens/CompetitionsScreen";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -55,6 +56,7 @@ const ProtectedRoutes = () => {
         <Route path="/user/:id" element={<UserProfileScreen />} />
         <Route path="/club/:id" element={<ClubDetailScreen />} />
         <Route path="/admin" element={<AdminScreen />} />
+        <Route path="/competitions" element={<CompetitionsScreen />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       {!hideBottomNav && <BottomNav />}
