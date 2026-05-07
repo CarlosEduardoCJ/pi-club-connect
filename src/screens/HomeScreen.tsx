@@ -1,6 +1,6 @@
 import { useClubs } from '@/hooks/useSupabaseData';
 import ClubCard from '@/components/ClubCard';
-import { Search, Trophy, ChevronRight } from 'lucide-react';
+import { Search, TreePine, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
