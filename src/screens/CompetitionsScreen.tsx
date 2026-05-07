@@ -145,7 +145,7 @@ const CompetitionsScreen = () => {
               ) : list.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">Nenhuma competição cadastrada ainda.</p>
               ) : (
-                list.map((c, i) => <CompetitionCard key={c.id} competition={c} index={i} />)
+                list.map((c, i) => <CompetitionCard key={c.id} competition={c} index={i} isAdmin={isAdmin} onRefresh={() => queryClient.invalidateQueries({ queryKey: ['competitions'] })} />)
               )}
             </motion.div>
           )}
