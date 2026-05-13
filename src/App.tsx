@@ -19,6 +19,7 @@ import ChatRoomScreen from "./screens/ChatRoomScreen";
 import AuthScreen from "./screens/AuthScreen";
 import AdminScreen from "./screens/AdminScreen";
 import CompetitionsScreen from "./screens/CompetitionsScreen";
+import ResetPasswordScreen from "./screens/ResetPasswordScreen";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -81,6 +82,7 @@ const AppRoutes = () => {
         path="/auth"
         element={session ? <Navigate to="/" replace /> : <AuthScreen />}
       />
+      <Route path="/reset-password" element={<ResetPasswordScreen />} />
       <Route path="/*" element={<ProtectedRoutes />} />
     </Routes>
   );
