@@ -120,15 +120,18 @@ const AuthScreen = () => {
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="email">E-mail</Label>
+            <Label htmlFor="email">E-mail institucional</Label>
             <Input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="aluno@escola.com"
+              placeholder="seu.nome@aluno.edu.pi.gov.br"
               required
             />
+            <p className="text-xs text-muted-foreground">
+              Apenas e-mails @aluno.edu.pi.gov.br são aceitos.
+            </p>
           </div>
 
           <div className="space-y-2">
