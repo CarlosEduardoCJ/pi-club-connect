@@ -156,6 +156,16 @@ const AuthScreen = () => {
             </div>
           </div>
 
+          {isLogin && (
+            <button
+              type="button"
+              onClick={handleForgotPassword}
+              className="text-xs text-primary font-medium hover:underline self-end ml-auto block"
+            >
+              Esqueci minha senha
+            </button>
+          )}
+
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? 'Carregando...' : isLogin ? 'Entrar' : 'Criar conta'}
           </Button>
