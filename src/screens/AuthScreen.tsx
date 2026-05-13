@@ -16,6 +16,25 @@ const AuthScreen = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const ALLOWED_DOMAIN = '@aluno.edu.pi.gov.br';
+
+  const handleForgotPassword = async () => {
+    if (!email.trim()) {
+      toast.error('Digite seu e-mail institucional para receber o link.');
+      return;
+    }
+    setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setLoading(false);
+    if (error) {
+      toast.error(error.message || 'Erro ao enviar link de redefinição');
+      return;
+    }
+    toast.success('Enviamos um link de redefinição para seu e-mail.');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -31,16 +50,21 @@ const AuthScreen = () => {
           setLoading(false);
           return;
         }
+        if (!email.toLowerCase().endsWith(ALLOWED_DOMAIN)) {
+          toast.error(`Use seu e-mail institucional (${ALLOWED_DOMAIN}).`);
+          setLoading(false);
+          return;
+        }
         const { error } = await supabase.auth.signUp({
           email,
           password,
           options: {
             data: { name: name.trim(), username: username.trim() },
-            emailRedirectTo: window.location.origin,
+            emailRedirectTo: `${window.location.origin}/`,
           },
         });
         if (error) throw error;
-        toast.success('Conta criada! Verifique seu e-mail para confirmar.');
+        toast.success('Conta criada! Verifique seu e-mail institucional para confirmar.');
       }
     } catch (err: any) {
       toast.error(err.message || 'Erro na autenticação');
