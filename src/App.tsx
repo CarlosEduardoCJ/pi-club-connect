@@ -82,6 +82,7 @@ const AppRoutes = () => {
         path="/auth"
         element={session ? <Navigate to="/" replace /> : <AuthScreen />}
       />
+      <Route path="/reset-password" element={<ResetPasswordScreen />} />
       <Route path="/*" element={<ProtectedRoutes />} />
     </Routes>
   );
