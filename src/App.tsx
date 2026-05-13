@@ -19,6 +19,7 @@ import ChatRoomScreen from "./screens/ChatRoomScreen";
 import AuthScreen from "./screens/AuthScreen";
 import AdminScreen from "./screens/AdminScreen";
 import CompetitionsScreen from "./screens/CompetitionsScreen";
+import ResetPasswordScreen from "./screens/ResetPasswordScreen";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
