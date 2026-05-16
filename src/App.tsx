@@ -45,6 +45,7 @@ const ProtectedRoutes = () => {
 
   return (
     <>
+      <PrivacyOverlay />
       <Routes>
         <Route path="/" element={<HomeScreen />} />
         <Route path="/feed" element={<FeedScreen />} />
