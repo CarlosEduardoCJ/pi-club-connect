@@ -57,7 +57,6 @@ const ProfileScreen = () => {
               src={user.avatar}
               alt={user.name}
               className="w-20 h-20 rounded-full"
-              watermarkTextClass="text-[10px]"
               fallback={<span className="text-2xl font-extrabold text-primary">{getInitials(user.name)}</span>}
             />
             <div className="flex-1">
