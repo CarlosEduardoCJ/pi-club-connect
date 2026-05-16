@@ -3,6 +3,7 @@ import { useProfile, useProfileClubs, usePosts } from '@/hooks/useSupabaseData';
 import { useAuth } from '@/hooks/useAuth';
 import PostCard from '@/components/PostCard';
 import EditProfileDialog from '@/components/EditProfileDialog';
+import ProfileAvatar from '@/components/ProfileAvatar';
 import { Settings, Edit3 } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
