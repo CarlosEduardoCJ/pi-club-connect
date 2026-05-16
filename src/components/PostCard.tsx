@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import CommentsSection from '@/components/CommentsSection';
+import ProfileAvatar from '@/components/ProfileAvatar';
 
 interface PostDisplay {
   id: string;
@@ -77,13 +78,12 @@ const PostCard = ({ post, index }: { post: PostDisplay; index: number }) => {
       style={{ boxShadow: 'var(--shadow-card)' }}
     >
       <div className="flex items-center gap-3 mb-3 cursor-pointer" onClick={() => post.authorId && navigate(`/user/${post.authorId}`)}>
-        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
-          {post.authorAvatar ? (
-            <img src={post.authorAvatar} alt={post.authorName} className="w-full h-full object-cover" />
-          ) : (
-            <span className="text-sm font-bold text-primary">{getInitials(post.authorName)}</span>
-          )}
-        </div>
+        <ProfileAvatar
+          src={post.authorAvatar}
+          alt={post.authorName}
+          className="w-10 h-10 rounded-full"
+          fallback={<span className="text-sm font-bold text-primary">{getInitials(post.authorName)}</span>}
+        />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className="text-sm font-bold text-foreground truncate">{post.authorName}</span>

@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { usePosts } from '@/hooks/useSupabaseData';
 import PostCard from '@/components/PostCard';
+import ProfileAvatar from '@/components/ProfileAvatar';
 import { ArrowLeft, UserPlus, UserCheck } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -117,13 +118,13 @@ const UserProfileScreen = () => {
           style={{ boxShadow: 'var(--shadow-card)' }}
         >
           <div className="flex items-center gap-4 mb-4">
-            <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
-              {user.avatar ? (
-                <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-2xl font-extrabold text-primary">{getInitials(user.name)}</span>
-              )}
-            </div>
+            <ProfileAvatar
+              src={user.avatar}
+              alt={user.name}
+              className="w-20 h-20 rounded-full"
+              watermarkTextClass="text-[10px]"
+              fallback={<span className="text-2xl font-extrabold text-primary">{getInitials(user.name)}</span>}
+            />
             <div className="flex-1">
               <h2 className="text-lg font-bold text-foreground">{user.name}</h2>
               <p className="text-sm text-muted-foreground">@{user.username}</p>
