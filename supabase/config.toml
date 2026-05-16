@@ -1,1 +1,4 @@
 project_id = "vpbfulwsptehagzqhvey"
+
+[functions.get-profile-photo]
+verify_jwt = true
