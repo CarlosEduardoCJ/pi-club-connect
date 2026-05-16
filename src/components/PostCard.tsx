@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import CommentsSection from '@/components/CommentsSection';
+import ProfileAvatar from '@/components/ProfileAvatar';
 
 interface PostDisplay {
   id: string;
