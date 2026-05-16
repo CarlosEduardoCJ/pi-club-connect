@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { usePosts } from '@/hooks/useSupabaseData';
 import PostCard from '@/components/PostCard';
+import ProfileAvatar from '@/components/ProfileAvatar';
 import { ArrowLeft, UserPlus, UserCheck } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
