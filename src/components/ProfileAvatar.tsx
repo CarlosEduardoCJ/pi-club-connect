@@ -29,7 +29,7 @@ const ProfileAvatar = ({
       aria-label={alt}
     >
       {preset ? (
-        <span className="text-[55%] leading-none select-none" role="img" aria-hidden>
+        <span className="text-[70%] leading-none select-none" role="img" aria-hidden>
           {preset.emoji}
         </span>
       ) : (
