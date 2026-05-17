@@ -1,14 +1,15 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Camera } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import AvatarPicker from '@/components/AvatarPicker';
+import ProfileAvatar from '@/components/ProfileAvatar';
+import { buildAvatarValue, parseAvatar } from '@/lib/presetAvatars';
 
 interface EditProfileDialogProps {
   open: boolean;
@@ -30,46 +31,11 @@ const EditProfileDialog = ({ open, onOpenChange, profile }: EditProfileDialogPro
   const [username, setUsername] = useState(profile.username);
   const [bio, setBio] = useState(profile.bio || '');
   const [grade, setGrade] = useState(profile.grade || '');
-  const [avatarUrl, setAvatarUrl] = useState(profile.avatar || '');
-  const [uploading, setUploading] = useState(false);
+  const [avatarValue, setAvatarValue] = useState<string | null>(profile.avatar || null);
   const [saving, setSaving] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
-  const { user } = useAuth();
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !user) return;
-
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error('Imagem muito grande (máx. 2MB)');
-      return;
-    }
-
-    if (!file.type.startsWith('image/')) {
-      toast.error('Selecione uma imagem válida');
-      return;
-    }
-
-    setUploading(true);
-    const ext = file.name.split('.').pop();
-    const path = `${user.id}/avatar.${ext}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from('avatars')
-      .upload(path, file, { upsert: true });
-
-    if (uploadError) {
-      toast.error('Erro ao enviar foto');
-      setUploading(false);
-      return;
-    }
-
-    const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path);
-    setAvatarUrl(`${publicUrl}?t=${Date.now()}`);
-    setUploading(false);
-    toast.success('Foto atualizada!');
-  };
+  const selectedPreset = parseAvatar(avatarValue);
 
   const handleSave = async () => {
     const trimmedName = name.trim();
@@ -86,7 +52,7 @@ const EditProfileDialog = ({ open, onOpenChange, profile }: EditProfileDialogPro
         username: username.trim(),
         bio: bio.trim(),
         grade: grade.trim(),
-        avatar: avatarUrl || null,
+        avatar: avatarValue,
       })
       .eq('id', profile.id);
 
@@ -102,39 +68,30 @@ const EditProfileDialog = ({ open, onOpenChange, profile }: EditProfileDialogPro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm">
+      <DialogContent className="max-w-sm max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Editar Perfil</DialogTitle>
         </DialogHeader>
         <div className="space-y-5 pt-2">
-          {/* Avatar */}
+          {/* Avatar atual */}
           <div className="flex flex-col items-center gap-2">
-            <div
-              className="relative w-24 h-24 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center cursor-pointer group"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              {avatarUrl ? (
-                <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-2xl font-extrabold text-primary">{getInitials(name)}</span>
-              )}
-              <div className="absolute inset-0 bg-foreground/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <Camera className="w-6 h-6 text-background" />
-              </div>
-            </div>
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-              className="text-xs font-semibold text-accent hover:underline"
-            >
-              {uploading ? 'Enviando...' : 'Alterar foto'}
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleAvatarUpload}
+            <ProfileAvatar
+              src={avatarValue}
+              alt={name}
+              className="w-24 h-24 rounded-full"
+              fallback={<span className="text-2xl font-extrabold text-primary">{getInitials(name)}</span>}
+            />
+            <p className="text-xs text-muted-foreground">
+              {selectedPreset ? `Avatar: ${selectedPreset.label}` : 'Escolha um avatar abaixo'}
+            </p>
+          </div>
+
+          {/* Galeria */}
+          <div className="space-y-2">
+            <Label>Galeria de avatares</Label>
+            <AvatarPicker
+              selectedId={selectedPreset?.id}
+              onSelect={(a) => setAvatarValue(buildAvatarValue(a.id))}
             />
           </div>
 

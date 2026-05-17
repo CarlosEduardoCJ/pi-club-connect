@@ -21,7 +21,6 @@ import AdminScreen from "./screens/AdminScreen";
 import CompetitionsScreen from "./screens/CompetitionsScreen";
 import ResetPasswordScreen from "./screens/ResetPasswordScreen";
 import NotFound from "./pages/NotFound";
-import PrivacyOverlay from "./components/PrivacyOverlay";
 
 const queryClient = new QueryClient();
 
@@ -45,7 +44,6 @@ const ProtectedRoutes = () => {
 
   return (
     <>
-      <PrivacyOverlay />
       <Routes>
         <Route path="/" element={<HomeScreen />} />
         <Route path="/feed" element={<FeedScreen />} />
