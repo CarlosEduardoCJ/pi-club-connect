@@ -7,6 +7,8 @@ interface ProfileAvatarProps {
   alt?: string;
   fallback?: ReactNode;
   className?: string;
+  /** Classe Tailwind para o tamanho do emoji (ex: "text-5xl"). */
+  emojiClassName?: string;
 }
 
 /**
@@ -18,6 +20,7 @@ const ProfileAvatar = ({
   alt = '',
   fallback,
   className = 'w-10 h-10 rounded-full',
+  emojiClassName = 'text-[70%]',
 }: ProfileAvatarProps) => {
   const preset = parseAvatar(src);
 
@@ -29,7 +32,7 @@ const ProfileAvatar = ({
       aria-label={alt}
     >
       {preset ? (
-        <span className="text-[70%] leading-none select-none" role="img" aria-hidden>
+        <span className={`${emojiClassName} leading-none select-none`} role="img" aria-hidden>
           {preset.emoji}
         </span>
       ) : (
