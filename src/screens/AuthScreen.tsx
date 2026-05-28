@@ -52,8 +52,8 @@ const AuthScreen = () => {
           setLoading(false);
           return;
         }
-        if (!email.toLowerCase().endsWith(ALLOWED_DOMAIN)) {
-          toast.error(`Use seu e-mail institucional (${ALLOWED_DOMAIN}).`);
+        if (!isInstitutionalEmail(email)) {
+          toast.error('Apenas e-mails institucionais da Seduc-PI são permitidos.');
           setLoading(false);
           return;
         }
