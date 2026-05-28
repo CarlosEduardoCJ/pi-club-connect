@@ -16,7 +16,9 @@ const AuthScreen = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const ALLOWED_DOMAIN = '@aluno.edu.pi.gov.br';
+  const ALLOWED_DOMAINS = ['@aluno.edu.pi.gov.br', '@professor.edu.pi.gov.br'];
+  const isInstitutionalEmail = (value: string) =>
+    ALLOWED_DOMAINS.some((d) => value.toLowerCase().endsWith(d));
 
   const handleForgotPassword = async () => {
     if (!email.trim()) {
@@ -50,8 +52,8 @@ const AuthScreen = () => {
           setLoading(false);
           return;
         }
-        if (!email.toLowerCase().endsWith(ALLOWED_DOMAIN)) {
-          toast.error(`Use seu e-mail institucional (${ALLOWED_DOMAIN}).`);
+        if (!isInstitutionalEmail(email)) {
+          toast.error('Apenas e-mails institucionais da Seduc-PI são permitidos.');
           setLoading(false);
           return;
         }
@@ -130,7 +132,7 @@ const AuthScreen = () => {
               required
             />
             <p className="text-xs text-muted-foreground">
-              Apenas e-mails @aluno.edu.pi.gov.br são aceitos.
+              Apenas e-mails @aluno.edu.pi.gov.br (alunos) ou @professor.edu.pi.gov.br (professores) são aceitos.
             </p>
           </div>
 
