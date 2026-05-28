@@ -16,7 +16,9 @@ const AuthScreen = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const ALLOWED_DOMAIN = '@aluno.edu.pi.gov.br';
+  const ALLOWED_DOMAINS = ['@aluno.edu.pi.gov.br', '@professor.edu.pi.gov.br'];
+  const isInstitutionalEmail = (value: string) =>
+    ALLOWED_DOMAINS.some((d) => value.toLowerCase().endsWith(d));
 
   const handleForgotPassword = async () => {
     if (!email.trim()) {
