@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Plus, Trash2, Users, BookOpen, CalendarDays, Shield, FileText } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Users, BookOpen, CalendarDays, Shield, FileText, Pencil } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useClubs, useEvents, usePosts } from '@/hooks/useSupabaseData';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
