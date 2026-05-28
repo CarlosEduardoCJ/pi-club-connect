@@ -132,7 +132,7 @@ const AuthScreen = () => {
               required
             />
             <p className="text-xs text-muted-foreground">
-              Apenas e-mails @aluno.edu.pi.gov.br são aceitos.
+              Apenas e-mails @aluno.edu.pi.gov.br (alunos) ou @professor.edu.pi.gov.br (professores) são aceitos.
             </p>
           </div>
 
