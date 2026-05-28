@@ -196,6 +196,15 @@ const AdminEvents = () => {
   const [location, setLocation] = useState('');
   const [clubId, setClubId] = useState('');
 
+  const [editOpen, setEditOpen] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [editDate, setEditDate] = useState('');
+  const [editTime, setEditTime] = useState('');
+  const [editLocation, setEditLocation] = useState('');
+  const [editClubId, setEditClubId] = useState('');
+
   const handleCreate = async () => {
     if (!title.trim() || !clubId || !date || !time || !location) { toast.error('Preencha todos os campos'); return; }
     const { error } = await supabase.from('events').insert({ title, description, date, time, location, club_id: clubId });
@@ -203,6 +212,36 @@ const AdminEvents = () => {
     toast.success('Evento criado!');
     setOpen(false);
     setTitle(''); setDescription(''); setDate(''); setTime(''); setLocation(''); setClubId('');
+    queryClient.invalidateQueries({ queryKey: ['events'] });
+  };
+
+  const openEdit = (event: any) => {
+    setEditId(event.id);
+    setEditTitle(event.title);
+    setEditDescription(event.description || '');
+    setEditDate(event.date || '');
+    setEditTime(event.time || '');
+    setEditLocation(event.location || '');
+    setEditClubId(event.club_id || '');
+    setEditOpen(true);
+  };
+
+  const handleUpdate = async () => {
+    if (!editId || !editTitle.trim() || !editClubId || !editDate || !editTime || !editLocation) {
+      toast.error('Preencha todos os campos'); return;
+    }
+    const { error } = await supabase.from('events').update({
+      title: editTitle,
+      description: editDescription,
+      date: editDate,
+      time: editTime,
+      location: editLocation,
+      club_id: editClubId,
+    }).eq('id', editId);
+    if (error) { toast.error('Erro ao atualizar evento'); return; }
+    toast.success('Evento atualizado!');
+    setEditOpen(false);
+    setEditId(null);
     queryClient.invalidateQueries({ queryKey: ['events'] });
   };
 
@@ -242,6 +281,29 @@ const AdminEvents = () => {
           </DialogContent>
         </Dialog>
       </div>
+
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Editar Evento</DialogTitle></DialogHeader>
+          <div className="flex flex-col gap-3">
+            <Input placeholder="Título" value={editTitle} onChange={e => setEditTitle(e.target.value)} />
+            <Input placeholder="Descrição" value={editDescription} onChange={e => setEditDescription(e.target.value)} />
+            <select
+              value={editClubId}
+              onChange={e => setEditClubId(e.target.value)}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+            >
+              <option value="">Selecione um clube</option>
+              {(clubs || []).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+            <Input type="date" value={editDate} onChange={e => setEditDate(e.target.value)} />
+            <Input placeholder="Horário (ex: 14:00)" value={editTime} onChange={e => setEditTime(e.target.value)} />
+            <Input placeholder="Local" value={editLocation} onChange={e => setEditLocation(e.target.value)} />
+            <Button onClick={handleUpdate}>Salvar</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {isLoading ? (
         <p className="text-muted-foreground text-sm">Carregando...</p>
       ) : (
@@ -254,13 +316,18 @@ const AdminEvents = () => {
             className="bg-card rounded-[var(--radius)] p-3 flex items-center justify-between"
             style={{ boxShadow: 'var(--shadow-card)' }}
           >
-            <div>
+            <div className="min-w-0 flex-1">
               <p className="text-sm font-bold text-foreground">{event.title}</p>
               <p className="text-xs text-muted-foreground">{event.date} • {event.location}</p>
             </div>
-            <button onClick={() => handleDelete(event.id)} className="text-destructive hover:bg-destructive/10 p-2 rounded-lg transition-colors">
-              <Trash2 className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-1 shrink-0">
+              <button onClick={() => openEdit(event)} className="text-accent hover:bg-accent/10 p-2 rounded-lg transition-colors">
+                <Pencil className="w-4 h-4" />
+              </button>
+              <button onClick={() => handleDelete(event.id)} className="text-destructive hover:bg-destructive/10 p-2 rounded-lg transition-colors">
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
           </motion.div>
         ))
       )}
