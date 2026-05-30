@@ -175,6 +175,11 @@ const AuthScreen = () => {
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
+            {!isLogin && strength > 0 && (
+              <p className={`text-xs font-medium ${strengthInfo[strength as 1 | 2 | 3].color}`}>
+                {strengthInfo[strength as 1 | 2 | 3].text}
+              </p>
+            )}
           </div>
 
           {isLogin && (
