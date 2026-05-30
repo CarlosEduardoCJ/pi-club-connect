@@ -144,9 +144,34 @@ const CompetitionsScreen = () => {
                 <p className="text-sm text-muted-foreground text-center py-8">Carregando...</p>
               ) : list.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">Nenhuma competição cadastrada ainda.</p>
-              ) : (
-                list.map((c, i) => <CompetitionCard key={c.id} competition={c} index={i} isAdmin={isAdmin} onRefresh={() => queryClient.invalidateQueries({ queryKey: ['competitions'] })} />)
-              )}
+              ) : (() => {
+                const today = new Date(); today.setHours(0, 0, 0, 0);
+                const isEnded = (c: typeof list[number]) => {
+                  if (c.status === 'finished' || c.status === 'closed') return true;
+                  return new Date(c.date) < today;
+                };
+                const active = list.filter(c => !isEnded(c));
+                const ended = list.filter(isEnded);
+                const refresh = () => queryClient.invalidateQueries({ queryKey: ['competitions'] });
+                return (
+                  <Tabs defaultValue="active" className="w-full">
+                    <TabsList className="grid grid-cols-2 w-full">
+                      <TabsTrigger value="active">Ativas ({active.length})</TabsTrigger>
+                      <TabsTrigger value="ended">Encerradas ({ended.length})</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="active" className="flex flex-col gap-4 mt-4">
+                      {active.length === 0
+                        ? <p className="text-sm text-muted-foreground text-center py-8">Nenhuma competição ativa.</p>
+                        : active.map((c, i) => <CompetitionCard key={c.id} competition={c} index={i} isAdmin={isAdmin} onRefresh={refresh} />)}
+                    </TabsContent>
+                    <TabsContent value="ended" className="flex flex-col gap-4 mt-4">
+                      {ended.length === 0
+                        ? <p className="text-sm text-muted-foreground text-center py-8">Nenhuma competição encerrada.</p>
+                        : ended.map((c, i) => <CompetitionCard key={c.id} competition={c} index={i} isAdmin={isAdmin} onRefresh={refresh} />)}
+                    </TabsContent>
+                  </Tabs>
+                );
+              })()}
             </motion.div>
           )}
 
