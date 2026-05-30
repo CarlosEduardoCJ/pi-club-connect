@@ -20,6 +20,25 @@ const AuthScreen = () => {
   const isInstitutionalEmail = (value: string) =>
     ALLOWED_DOMAINS.some((d) => value.toLowerCase().endsWith(d));
 
+  const getPasswordStrength = (pw: string): 0 | 1 | 2 | 3 => {
+    if (!pw) return 0;
+    let score = 0;
+    if (pw.length >= 8) score++;
+    if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++;
+    if (/\d/.test(pw)) score++;
+    if (/[^A-Za-z0-9]/.test(pw)) score++;
+    if (pw.length >= 12) score++;
+    if (score <= 2) return 1;
+    if (score <= 3) return 2;
+    return 3;
+  };
+  const strength = getPasswordStrength(password);
+  const strengthInfo: Record<1 | 2 | 3, { text: string; color: string }> = {
+    1: { text: 'Senha muito fraca, tente outra.', color: 'text-destructive' },
+    2: { text: 'Senha razoável, mas pode ser mais forte.', color: 'text-yellow-600 dark:text-yellow-500' },
+    3: { text: 'Senha forte!', color: 'text-green-600 dark:text-green-500' },
+  };
+
   const handleForgotPassword = async () => {
     if (!email.trim()) {
       toast.error('Digite seu e-mail institucional para receber o link.');
@@ -156,6 +175,11 @@ const AuthScreen = () => {
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
+            {!isLogin && strength > 0 && (
+              <p className={`text-xs font-medium ${strengthInfo[strength as 1 | 2 | 3].color}`}>
+                {strengthInfo[strength as 1 | 2 | 3].text}
+              </p>
+            )}
           </div>
 
           {isLogin && (
