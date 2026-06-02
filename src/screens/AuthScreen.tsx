@@ -62,8 +62,18 @@ const AuthScreen = () => {
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) {
+          const msg = (error.message || '').toLowerCase();
+          if (msg.includes('banned') || msg.includes('user is banned') || (error as any).code === 'user_banned') {
+            throw new Error('Sua conta está suspensa temporariamente por um administrador.');
+          }
+          throw error;
+        }
+        if ((data.user?.user_metadata as any)?.banned === true) {
+          await supabase.auth.signOut();
+          throw new Error('Sua conta está suspensa temporariamente por um administrador.');
+        }
         toast.success('Bem-vindo de volta!');
       } else {
         if (!name.trim() || !username.trim()) {

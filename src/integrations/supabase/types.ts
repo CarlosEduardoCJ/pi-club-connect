@@ -565,12 +565,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      ban_user_by_admin: {
+        Args: { target_user_id: string }
+        Returns: undefined
+      }
+      delete_user_by_admin: {
+        Args: { target_user_id: string }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      unban_user_by_admin: {
+        Args: { target_user_id: string }
+        Returns: undefined
       }
     }
     Enums: {
