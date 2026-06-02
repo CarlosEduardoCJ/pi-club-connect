@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Plus, Trash2, Users, BookOpen, CalendarDays, Shield, FileText, Pencil } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Users, BookOpen, CalendarDays, Shield, FileText, Pencil, Settings2, Ban, UserX } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useClubs, useEvents, usePosts } from '@/hooks/useSupabaseData';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
+import { useAdmin } from '@/hooks/useAdmin';
+import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -13,8 +15,12 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
+  DialogFooter,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 
 type Tab = 'clubs' | 'events' | 'posts' | 'users';
 
