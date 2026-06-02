@@ -27,6 +27,21 @@ type Tab = 'clubs' | 'events' | 'posts' | 'users';
 const AdminScreen = () => {
   const [activeTab, setActiveTab] = useState<Tab>('clubs');
   const queryClient = useQueryClient();
+  const { isAdmin, loading: adminLoading } = useAdmin();
+
+  if (adminLoading) {
+    return <div className="min-h-screen flex items-center justify-center text-muted-foreground text-sm">Verificando permissões...</div>;
+  }
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center gap-3">
+        <Shield className="w-10 h-10 text-destructive" />
+        <h1 className="text-lg font-bold text-foreground">Acesso restrito</h1>
+        <p className="text-sm text-muted-foreground">Apenas administradores podem acessar este painel.</p>
+        <Link to="/profile" className="text-primary text-sm font-semibold hover:underline">Voltar ao perfil</Link>
+      </div>
+    );
+  }
 
   const tabs = [
     { key: 'clubs' as const, label: 'Clubes', icon: BookOpen },
