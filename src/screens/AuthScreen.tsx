@@ -1,13 +1,27 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
-import { BookOpen, Eye, EyeOff } from 'lucide-react';
+import { BookOpen, Eye, EyeOff, Check, ChevronsUpDown } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { cn } from '@/lib/utils';
 
 const AuthScreen = () => {
+  const [schools, setSchools] = useState<{ id: string; name: string }[]>([]);
+  const [schoolId, setSchoolId] = useState<string>('');
+  const [schoolOpen, setSchoolOpen] = useState(false);
+
+  useEffect(() => {
+    supabase.from('schools').select('id, name').order('name').then(({ data }) => {
+      if (data) setSchools(data);
+    });
+  }, []);
+
+  const selectedSchool = schools.find((s) => s.id === schoolId);
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -86,11 +100,16 @@ const AuthScreen = () => {
           setLoading(false);
           return;
         }
+        if (!selectedSchool) {
+          toast.error('Selecione sua escola para criar a conta.');
+          setLoading(false);
+          return;
+        }
         const { error } = await supabase.auth.signUp({
           email,
           password,
           options: {
-            data: { name: name.trim(), username: username.trim() },
+            data: { name: name.trim(), username: username.trim(), school: selectedSchool.name },
             emailRedirectTo: `${window.location.origin}/`,
           },
         });
@@ -146,6 +165,49 @@ const AuthScreen = () => {
                   placeholder="ana.beatriz"
                   required={!isLogin}
                 />
+              </div>
+              <div className="space-y-2">
+                <Label>Escola</Label>
+                <Popover open={schoolOpen} onOpenChange={setSchoolOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={schoolOpen}
+                      className="w-full justify-between font-normal"
+                    >
+                      <span className={cn(!selectedSchool && 'text-muted-foreground')}>
+                        {selectedSchool ? selectedSchool.name : 'Selecione sua escola'}
+                      </span>
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="Buscar escola..." />
+                      <CommandList>
+                        <CommandEmpty>Nenhuma escola encontrada.</CommandEmpty>
+                        <CommandGroup>
+                          {schools.map((s) => (
+                            <CommandItem
+                              key={s.id}
+                              value={s.name}
+                              onSelect={() => {
+                                setSchoolId(s.id);
+                                setSchoolOpen(false);
+                              }}
+                            >
+                              <Check className={cn('mr-2 h-4 w-4', schoolId === s.id ? 'opacity-100' : 'opacity-0')} />
+                              {s.name}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+                <p className="text-xs text-muted-foreground">Selecione a escola onde você estuda ou leciona.</p>
               </div>
             </>
           )}
