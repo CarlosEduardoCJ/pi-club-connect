@@ -1,13 +1,27 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
-import { BookOpen, Eye, EyeOff } from 'lucide-react';
+import { BookOpen, Eye, EyeOff, Check, ChevronsUpDown, Search } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { cn } from '@/lib/utils';
 
 const AuthScreen = () => {
+  const [schools, setSchools] = useState<{ id: string; name: string }[]>([]);
+  const [schoolId, setSchoolId] = useState<string>('');
+  const [schoolOpen, setSchoolOpen] = useState(false);
+
+  useEffect(() => {
+    supabase.from('schools').select('id, name').order('name').then(({ data }) => {
+      if (data) setSchools(data);
+    });
+  }, []);
+
+  const selectedSchool = schools.find((s) => s.id === schoolId);
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
