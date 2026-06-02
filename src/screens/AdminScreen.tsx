@@ -398,6 +398,14 @@ const AdminPosts = () => {
 
 const AdminUsers = () => {
   const queryClient = useQueryClient();
+  const { user: currentUser } = useAuth();
+  const { isAdmin } = useAdmin();
+
+  const [manageOpen, setManageOpen] = useState(false);
+  const [manageTarget, setManageTarget] = useState<{ user_id: string; name: string } | null>(null);
+  const [action, setAction] = useState<'suspend' | 'delete'>('suspend');
+  const [submitting, setSubmitting] = useState(false);
+
   const { data: profiles, isLoading } = useQuery({
     queryKey: ['admin-profiles'],
     queryFn: async () => {
@@ -433,6 +441,43 @@ const AdminUsers = () => {
   const isUserAdmin = (userId: string | null) =>
     !!userId && (roles || []).some(r => r.user_id === userId && r.role === 'admin');
 
+  const openManage = (profile: any) => {
+    if (!profile.user_id) { toast.error('Usuário sem conta vinculada.'); return; }
+    setManageTarget({ user_id: profile.user_id, name: profile.name });
+    setAction('suspend');
+    setManageOpen(true);
+  };
+
+  const confirmManage = async () => {
+    if (!manageTarget) return;
+    if (manageTarget.user_id === currentUser?.id) {
+      toast.error('Você não pode realizar essa ação na sua própria conta.');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      if (action === 'suspend') {
+        const { error } = await supabase.rpc('ban_user_by_admin' as any, { target_user_id: manageTarget.user_id });
+        if (error) throw error;
+        toast.success(`${manageTarget.name} foi suspenso temporariamente.`);
+      } else {
+        const { error } = await supabase.rpc('delete_user_by_admin' as any, { target_user_id: manageTarget.user_id });
+        if (error) throw error;
+        toast.success(`${manageTarget.name} foi excluído permanentemente.`);
+      }
+      setManageOpen(false);
+      setManageTarget(null);
+      queryClient.invalidateQueries({ queryKey: ['admin-profiles'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-roles'] });
+    } catch (err: any) {
+      toast.error(err.message || 'Erro ao executar ação');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (!isAdmin) return null;
+
   return (
     <div className="flex flex-col gap-3">
       <h2 className="text-sm font-bold text-foreground">Usuários ({(profiles || []).length})</h2>
@@ -441,13 +486,14 @@ const AdminUsers = () => {
       ) : (
         (profiles || []).map((profile, i) => {
           const admin = isUserAdmin(profile.user_id);
+          const isSelf = profile.user_id === currentUser?.id;
           return (
             <motion.div
               key={profile.id}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.03 }}
-              className="bg-card rounded-[var(--radius)] p-3 flex items-center gap-3"
+              className="bg-card rounded-[var(--radius)] p-3 flex items-center gap-2"
               style={{ boxShadow: 'var(--shadow-card)' }}
             >
               <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden shrink-0">
@@ -458,8 +504,8 @@ const AdminUsers = () => {
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-foreground">{profile.name}</p>
-                <p className="text-xs text-muted-foreground">@{profile.username}</p>
+                <p className="text-sm font-bold text-foreground truncate">{profile.name}</p>
+                <p className="text-xs text-muted-foreground truncate">@{profile.username}</p>
               </div>
               {admin && (
                 <span className="text-[10px] font-bold bg-accent/10 text-accent px-2 py-0.5 rounded-full">ADMIN</span>
@@ -467,7 +513,7 @@ const AdminUsers = () => {
               <button
                 onClick={() => toggleAdmin(profile.user_id, admin)}
                 disabled={!profile.user_id}
-                className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors ${
+                className={`text-xs font-semibold px-2.5 py-1.5 rounded-lg transition-colors ${
                   admin
                     ? 'bg-destructive/10 text-destructive hover:bg-destructive/20'
                     : 'bg-accent/10 text-accent hover:bg-accent/20'
@@ -475,10 +521,66 @@ const AdminUsers = () => {
               >
                 {admin ? 'Remover' : 'Promover'}
               </button>
+              <button
+                onClick={() => openManage(profile)}
+                disabled={!profile.user_id || isSelf}
+                title={isSelf ? 'Você não pode gerenciar sua própria conta' : 'Gerenciar conta'}
+                className="text-muted-foreground hover:text-foreground hover:bg-muted p-2 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <Settings2 className="w-4 h-4" />
+              </button>
             </motion.div>
           );
         })
       )}
+
+      <Dialog open={manageOpen} onOpenChange={setManageOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Gerenciar conta</DialogTitle>
+            <DialogDescription>
+              Escolha uma ação para <span className="font-semibold text-foreground">{manageTarget?.name}</span>. Esta operação afeta o acesso da conta.
+            </DialogDescription>
+          </DialogHeader>
+
+          <RadioGroup value={action} onValueChange={(v) => setAction(v as 'suspend' | 'delete')} className="gap-3 py-2">
+            <label htmlFor="opt-suspend" className="flex items-start gap-3 rounded-lg border border-border p-3 cursor-pointer hover:bg-muted/50">
+              <RadioGroupItem value="suspend" id="opt-suspend" className="mt-0.5" />
+              <div className="flex-1">
+                <div className="flex items-center gap-2 text-sm font-bold text-foreground">
+                  <Ban className="w-4 h-4 text-yellow-600" /> Suspensão Temporária
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Bloqueia o acesso do usuário, mas mantém todos os dados. Pode ser revertida depois.
+                </p>
+              </div>
+            </label>
+
+            <label htmlFor="opt-delete" className="flex items-start gap-3 rounded-lg border border-destructive/40 p-3 cursor-pointer hover:bg-destructive/5">
+              <RadioGroupItem value="delete" id="opt-delete" className="mt-0.5" />
+              <div className="flex-1">
+                <div className="flex items-center gap-2 text-sm font-bold text-destructive">
+                  <UserX className="w-4 h-4" /> Exclusão Permanente
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Remove definitivamente o usuário, seu perfil e suas permissões. Esta ação não pode ser desfeita.
+                </p>
+              </div>
+            </label>
+          </RadioGroup>
+
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button variant="outline" onClick={() => setManageOpen(false)} disabled={submitting}>Cancelar</Button>
+            <Button
+              variant={action === 'delete' ? 'destructive' : 'default'}
+              onClick={confirmManage}
+              disabled={submitting}
+            >
+              {submitting ? 'Processando...' : action === 'delete' ? 'Excluir permanentemente' : 'Suspender conta'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
