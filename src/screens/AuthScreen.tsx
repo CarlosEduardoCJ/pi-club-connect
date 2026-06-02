@@ -100,11 +100,16 @@ const AuthScreen = () => {
           setLoading(false);
           return;
         }
+        if (!selectedSchool) {
+          toast.error('Selecione sua escola para criar a conta.');
+          setLoading(false);
+          return;
+        }
         const { error } = await supabase.auth.signUp({
           email,
           password,
           options: {
-            data: { name: name.trim(), username: username.trim() },
+            data: { name: name.trim(), username: username.trim(), school: selectedSchool.name },
             emailRedirectTo: `${window.location.origin}/`,
           },
         });
