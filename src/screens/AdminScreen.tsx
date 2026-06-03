@@ -472,13 +472,19 @@ const AdminUsers = () => {
   const [action, setAction] = useState<'suspend' | 'delete'>('suspend');
   const [submitting, setSubmitting] = useState(false);
 
+  const { data: adminSchool } = useAdminSchool();
   const { data: profiles, isLoading } = useQuery({
-    queryKey: ['admin-profiles'],
+    queryKey: ['admin-profiles', adminSchool],
     queryFn: async () => {
-      const { data, error } = await supabase.from('profiles').select('*').order('name');
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('school', adminSchool!)
+        .order('name');
       if (error) throw error;
       return data;
     },
+    enabled: !!adminSchool,
   });
 
   const { data: roles } = useQuery({
