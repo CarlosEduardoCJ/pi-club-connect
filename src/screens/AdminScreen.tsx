@@ -2,12 +2,30 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Plus, Trash2, Users, BookOpen, CalendarDays, Shield, FileText, Pencil, Settings2, Ban, UserX } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useClubs, useEvents, usePosts } from '@/hooks/useSupabaseData';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { useAdmin } from '@/hooks/useAdmin';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
+
+// Fetch the school of the currently authenticated admin so we can scope all
+// admin queries/mutations to that school only.
+const useAdminSchool = () => {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ['admin-school', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('school')
+        .eq('user_id', user!.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data?.school ?? null;
+    },
+    enabled: !!user?.id,
+  });
+};
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
