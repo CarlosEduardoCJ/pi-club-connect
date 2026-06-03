@@ -141,7 +141,7 @@ const AdminClubs = () => {
     toast.success('Clube criado!');
     setOpen(false);
     setName(''); setDescription(''); setIcon('BookOpen');
-    queryClient.invalidateQueries({ queryKey: ['clubs'] });
+    queryClient.invalidateQueries({ queryKey: ['admin-clubs'] }); queryClient.invalidateQueries({ queryKey: ['clubs'] });
   };
 
   const openEdit = (club: any) => {
@@ -163,14 +163,14 @@ const AdminClubs = () => {
     toast.success('Clube atualizado!');
     setEditOpen(false);
     setEditId(null);
-    queryClient.invalidateQueries({ queryKey: ['clubs'] });
+    queryClient.invalidateQueries({ queryKey: ['admin-clubs'] }); queryClient.invalidateQueries({ queryKey: ['clubs'] });
   };
 
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from('clubs').delete().eq('id', id);
     if (error) { toast.error('Erro ao deletar clube'); return; }
     toast.success('Clube deletado');
-    queryClient.invalidateQueries({ queryKey: ['clubs'] });
+    queryClient.invalidateQueries({ queryKey: ['admin-clubs'] }); queryClient.invalidateQueries({ queryKey: ['clubs'] });
   };
 
   return (
@@ -285,7 +285,7 @@ const AdminEvents = () => {
     toast.success('Evento criado!');
     setOpen(false);
     setTitle(''); setDescription(''); setDate(''); setTime(''); setLocation(''); setClubId('');
-    queryClient.invalidateQueries({ queryKey: ['events'] });
+    queryClient.invalidateQueries({ queryKey: ['admin-events'] }); queryClient.invalidateQueries({ queryKey: ['events'] });
   };
 
   const openEdit = (event: any) => {
@@ -315,14 +315,14 @@ const AdminEvents = () => {
     toast.success('Evento atualizado!');
     setEditOpen(false);
     setEditId(null);
-    queryClient.invalidateQueries({ queryKey: ['events'] });
+    queryClient.invalidateQueries({ queryKey: ['admin-events'] }); queryClient.invalidateQueries({ queryKey: ['events'] });
   };
 
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from('events').delete().eq('id', id);
     if (error) { toast.error('Erro ao deletar evento'); return; }
     toast.success('Evento deletado');
-    queryClient.invalidateQueries({ queryKey: ['events'] });
+    queryClient.invalidateQueries({ queryKey: ['admin-events'] }); queryClient.invalidateQueries({ queryKey: ['events'] });
   };
 
   return (
