@@ -237,9 +237,30 @@ const AdminClubs = () => {
 };
 
 const AdminEvents = () => {
-  const { data: events, isLoading } = useEvents();
-  const { data: clubs } = useClubs();
   const queryClient = useQueryClient();
+  const { data: adminSchool } = useAdminSchool();
+  const { data: clubs } = useQuery({
+    queryKey: ['admin-clubs', adminSchool],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('clubs').select('*').eq('school', adminSchool!).order('name');
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!adminSchool,
+  });
+  const { data: events, isLoading } = useQuery({
+    queryKey: ['admin-events', adminSchool],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('events')
+        .select('*, clubs!inner(name, icon, school)')
+        .eq('clubs.school', adminSchool!)
+        .order('date');
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!adminSchool,
+  });
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
