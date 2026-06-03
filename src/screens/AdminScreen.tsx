@@ -409,13 +409,27 @@ const AdminEvents = () => {
 };
 
 const AdminPosts = () => {
-  const { data: posts, isLoading } = usePosts();
   const queryClient = useQueryClient();
+  const { data: adminSchool } = useAdminSchool();
+  const { data: posts, isLoading } = useQuery({
+    queryKey: ['admin-posts', adminSchool],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('posts')
+        .select('*, profiles!posts_author_id_fkey(name, username, avatar), clubs!inner(name, school)')
+        .eq('clubs.school', adminSchool!)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!adminSchool,
+  });
 
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from('posts').delete().eq('id', id);
     if (error) { toast.error('Erro ao deletar post'); return; }
     toast.success('Post deletado');
+    queryClient.invalidateQueries({ queryKey: ['admin-posts'] });
     queryClient.invalidateQueries({ queryKey: ['posts'] });
   };
 
