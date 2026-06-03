@@ -108,8 +108,21 @@ const AdminScreen = () => {
 };
 
 const AdminClubs = () => {
-  const { data: clubs, isLoading } = useClubs();
   const queryClient = useQueryClient();
+  const { data: adminSchool } = useAdminSchool();
+  const { data: clubs, isLoading } = useQuery({
+    queryKey: ['admin-clubs', adminSchool],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('clubs')
+        .select('*')
+        .eq('school', adminSchool!)
+        .order('name');
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!adminSchool,
+  });
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
