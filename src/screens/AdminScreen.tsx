@@ -2,12 +2,30 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Plus, Trash2, Users, BookOpen, CalendarDays, Shield, FileText, Pencil, Settings2, Ban, UserX } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useClubs, useEvents, usePosts } from '@/hooks/useSupabaseData';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { useAdmin } from '@/hooks/useAdmin';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
+
+// Fetch the school of the currently authenticated admin so we can scope all
+// admin queries/mutations to that school only.
+const useAdminSchool = () => {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ['admin-school', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('school')
+        .eq('user_id', user!.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data?.school ?? null;
+    },
+    enabled: !!user?.id,
+  });
+};
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -90,8 +108,21 @@ const AdminScreen = () => {
 };
 
 const AdminClubs = () => {
-  const { data: clubs, isLoading } = useClubs();
   const queryClient = useQueryClient();
+  const { data: adminSchool } = useAdminSchool();
+  const { data: clubs, isLoading } = useQuery({
+    queryKey: ['admin-clubs', adminSchool],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('clubs')
+        .select('*')
+        .eq('school', adminSchool!)
+        .order('name');
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!adminSchool,
+  });
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -110,7 +141,7 @@ const AdminClubs = () => {
     toast.success('Clube criado!');
     setOpen(false);
     setName(''); setDescription(''); setIcon('BookOpen');
-    queryClient.invalidateQueries({ queryKey: ['clubs'] });
+    queryClient.invalidateQueries({ queryKey: ['admin-clubs'] }); queryClient.invalidateQueries({ queryKey: ['clubs'] });
   };
 
   const openEdit = (club: any) => {
@@ -132,14 +163,14 @@ const AdminClubs = () => {
     toast.success('Clube atualizado!');
     setEditOpen(false);
     setEditId(null);
-    queryClient.invalidateQueries({ queryKey: ['clubs'] });
+    queryClient.invalidateQueries({ queryKey: ['admin-clubs'] }); queryClient.invalidateQueries({ queryKey: ['clubs'] });
   };
 
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from('clubs').delete().eq('id', id);
     if (error) { toast.error('Erro ao deletar clube'); return; }
     toast.success('Clube deletado');
-    queryClient.invalidateQueries({ queryKey: ['clubs'] });
+    queryClient.invalidateQueries({ queryKey: ['admin-clubs'] }); queryClient.invalidateQueries({ queryKey: ['clubs'] });
   };
 
   return (
@@ -206,9 +237,30 @@ const AdminClubs = () => {
 };
 
 const AdminEvents = () => {
-  const { data: events, isLoading } = useEvents();
-  const { data: clubs } = useClubs();
   const queryClient = useQueryClient();
+  const { data: adminSchool } = useAdminSchool();
+  const { data: clubs } = useQuery({
+    queryKey: ['admin-clubs', adminSchool],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('clubs').select('*').eq('school', adminSchool!).order('name');
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!adminSchool,
+  });
+  const { data: events, isLoading } = useQuery({
+    queryKey: ['admin-events', adminSchool],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('events')
+        .select('*, clubs!inner(name, icon, school)')
+        .eq('clubs.school', adminSchool!)
+        .order('date');
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!adminSchool,
+  });
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -233,7 +285,7 @@ const AdminEvents = () => {
     toast.success('Evento criado!');
     setOpen(false);
     setTitle(''); setDescription(''); setDate(''); setTime(''); setLocation(''); setClubId('');
-    queryClient.invalidateQueries({ queryKey: ['events'] });
+    queryClient.invalidateQueries({ queryKey: ['admin-events'] }); queryClient.invalidateQueries({ queryKey: ['events'] });
   };
 
   const openEdit = (event: any) => {
@@ -263,14 +315,14 @@ const AdminEvents = () => {
     toast.success('Evento atualizado!');
     setEditOpen(false);
     setEditId(null);
-    queryClient.invalidateQueries({ queryKey: ['events'] });
+    queryClient.invalidateQueries({ queryKey: ['admin-events'] }); queryClient.invalidateQueries({ queryKey: ['events'] });
   };
 
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from('events').delete().eq('id', id);
     if (error) { toast.error('Erro ao deletar evento'); return; }
     toast.success('Evento deletado');
-    queryClient.invalidateQueries({ queryKey: ['events'] });
+    queryClient.invalidateQueries({ queryKey: ['admin-events'] }); queryClient.invalidateQueries({ queryKey: ['events'] });
   };
 
   return (
@@ -357,13 +409,27 @@ const AdminEvents = () => {
 };
 
 const AdminPosts = () => {
-  const { data: posts, isLoading } = usePosts();
   const queryClient = useQueryClient();
+  const { data: adminSchool } = useAdminSchool();
+  const { data: posts, isLoading } = useQuery({
+    queryKey: ['admin-posts', adminSchool],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('posts')
+        .select('*, profiles!posts_author_id_fkey(name, username, avatar), clubs!inner(name, school)')
+        .eq('clubs.school', adminSchool!)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!adminSchool,
+  });
 
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from('posts').delete().eq('id', id);
     if (error) { toast.error('Erro ao deletar post'); return; }
     toast.success('Post deletado');
+    queryClient.invalidateQueries({ queryKey: ['admin-posts'] });
     queryClient.invalidateQueries({ queryKey: ['posts'] });
   };
 
@@ -406,13 +472,19 @@ const AdminUsers = () => {
   const [action, setAction] = useState<'suspend' | 'delete'>('suspend');
   const [submitting, setSubmitting] = useState(false);
 
+  const { data: adminSchool } = useAdminSchool();
   const { data: profiles, isLoading } = useQuery({
-    queryKey: ['admin-profiles'],
+    queryKey: ['admin-profiles', adminSchool],
     queryFn: async () => {
-      const { data, error } = await supabase.from('profiles').select('*').order('name');
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('school', adminSchool!)
+        .order('name');
       if (error) throw error;
       return data;
     },
+    enabled: !!adminSchool,
   });
 
   const { data: roles } = useQuery({

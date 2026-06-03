@@ -137,6 +137,7 @@ export type Database = {
           icon: string
           id: string
           name: string
+          school: string
         }
         Insert: {
           created_at?: string
@@ -144,6 +145,7 @@ export type Database = {
           icon: string
           id?: string
           name: string
+          school?: string
         }
         Update: {
           created_at?: string
@@ -151,6 +153,7 @@ export type Database = {
           icon?: string
           id?: string
           name?: string
+          school?: string
         }
         Relationships: []
       }
@@ -590,6 +593,7 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: undefined
       }
+      current_user_school: { Args: never; Returns: string }
       delete_user_by_admin: {
         Args: { target_user_id: string }
         Returns: undefined
