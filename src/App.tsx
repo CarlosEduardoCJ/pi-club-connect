@@ -20,6 +20,9 @@ import AuthScreen from "./screens/AuthScreen";
 import AdminScreen from "./screens/AdminScreen";
 import CompetitionsScreen from "./screens/CompetitionsScreen";
 import ResetPasswordScreen from "./screens/ResetPasswordScreen";
+import DevLoginScreen from "./screens/DevLoginScreen";
+import DevSetupScreen from "./screens/DevSetupScreen";
+import DevPanelScreen from "./screens/DevPanelScreen";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
