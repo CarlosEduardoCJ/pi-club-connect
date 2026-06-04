@@ -86,6 +86,9 @@ const AppRoutes = () => {
         element={session ? <Navigate to="/" replace /> : <AuthScreen />}
       />
       <Route path="/reset-password" element={<ResetPasswordScreen />} />
+      <Route path="/dev-login" element={<DevLoginScreen />} />
+      <Route path="/dev-setup" element={<DevSetupScreen />} />
+      <Route path="/dev-panel" element={<DevPanelScreen />} />
       <Route path="/*" element={<ProtectedRoutes />} />
     </Routes>
   );
