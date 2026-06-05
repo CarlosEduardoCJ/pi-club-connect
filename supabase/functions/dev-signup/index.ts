@@ -45,6 +45,7 @@ Deno.serve(async (req) => {
       user_metadata: {
         name: email.split("@")[0],
         username: email.split("@")[0],
+        is_developer: true,
       },
     });
 
