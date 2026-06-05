@@ -21,15 +21,14 @@ export default function DevLoginScreen() {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
 
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("developer")
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
         .eq("user_id", data.user.id)
+        .eq("role", "developer")
         .maybeSingle();
 
-      if (profileError) throw profileError;
-
-      if (!profile?.developer) {
+      if (!roleData) {
         await supabase.auth.signOut();
         throw new Error("Acesso restrito a desenvolvedores.");
       }

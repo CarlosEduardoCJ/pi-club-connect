@@ -28,12 +28,13 @@ export default function DevPanelScreen() {
       return;
     }
     supabase
-      .from("profiles")
-      .select("developer")
+      .from("user_roles")
+      .select("role")
       .eq("user_id", user.id)
+      .eq("role", "developer")
       .maybeSingle()
-      .then(({ data, error }) => {
-        if (error || !data?.developer) {
+      .then(({ data }) => {
+        if (!data) {
           toast.error("Acesso restrito a desenvolvedores.");
           navigate("/dev-login", { replace: true });
         } else {

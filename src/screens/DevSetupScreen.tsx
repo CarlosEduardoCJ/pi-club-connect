@@ -8,17 +8,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { ShieldCheck } from "lucide-react";
 
-const getDevIdentity = (email: string) => {
-  const base = email.split("@")[0]?.trim().toLowerCase() || "developer";
-  const safeBase = base.replace(/[^a-z0-9._-]/g, "-").replace(/-+/g, "-").slice(0, 24) || "developer";
-  const suffix = crypto.randomUUID().slice(0, 8);
-
-  return {
-    name: safeBase,
-    username: `${safeBase}-${suffix}`,
-  };
-};
-
 export default function DevSetupScreen() {
   const navigate = useNavigate();
   const [step, setStep] = useState<"master" | "form">("master");
@@ -31,23 +20,12 @@ export default function DevSetupScreen() {
     e.preventDefault();
     setLoading(true);
     try {
-      const identity = getDevIdentity(email);
-      const { error } = await supabase.auth.signUp({
-        email: email.trim(),
-        password,
-        options: {
-          data: {
-            ...identity,
-            dev_setup_password: masterPassword,
-          },
-          emailRedirectTo: `${window.location.origin}/dev-login`,
-        },
+      const { data, error } = await supabase.functions.invoke("dev-signup", {
+        body: { masterPassword, email, password },
       });
-
       if (error) throw error;
-
-      await supabase.auth.signOut();
-      toast.success("Conta desenvolvedor criada com sucesso.");
+      if ((data as any)?.error) throw new Error((data as any).error);
+      toast.success("Conta desenvolvedor criada.");
       navigate("/dev-login", { replace: true });
     } catch (err) {
       toast.error((err as Error).message);
