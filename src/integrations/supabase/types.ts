@@ -505,6 +505,7 @@ export type Database = {
           avatar: string | null
           bio: string | null
           created_at: string
+          developer: boolean
           followers_count: number | null
           following_count: number | null
           grade: string | null
@@ -519,6 +520,7 @@ export type Database = {
           avatar?: string | null
           bio?: string | null
           created_at?: string
+          developer?: boolean
           followers_count?: number | null
           following_count?: number | null
           grade?: string | null
@@ -533,6 +535,7 @@ export type Database = {
           avatar?: string | null
           bio?: string | null
           created_at?: string
+          developer?: boolean
           followers_count?: number | null
           following_count?: number | null
           grade?: string | null
@@ -603,6 +606,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_valid_dev_setup_password: {
+        Args: { _password: string }
         Returns: boolean
       }
       unban_user_by_admin: {

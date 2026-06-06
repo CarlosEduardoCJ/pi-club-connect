@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { createClient } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +8,33 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { ShieldCheck } from "lucide-react";
+
+const DEFAULT_DEV_SCHOOL = "CETI MANOEL RICARDO";
+const authSetupClient = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+  {
+    auth: {
+      storageKey: "pi-club-dev-setup",
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  }
+);
+
+const getDeveloperIdentity = (email: string) => {
+  const localPart = email.trim().split("@")[0] || "developer";
+  const username = email
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ".")
+    .replace(/^\.+|\.+$/g, "");
+
+  return {
+    name: localPart,
+    username: username || `developer.${Date.now()}`,
+  };
+};
 
 export default function DevSetupScreen() {
   const navigate = useNavigate();
@@ -16,16 +44,56 @@ export default function DevSetupScreen() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const handleMasterStep = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const { data, error } = await supabase.rpc("is_valid_dev_setup_password", {
+        _password: masterPassword,
+      });
+
+      if (error) throw error;
+      if (!data) throw new Error("Senha mestra incorreta.");
+
+      setStep("form");
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("dev-signup", {
-        body: { masterPassword, email, password },
+      const { data: isValidPassword, error: validationError } = await supabase.rpc("is_valid_dev_setup_password", {
+        _password: masterPassword,
       });
+
+      if (validationError) throw validationError;
+      if (!isValidPassword) throw new Error("Senha mestra incorreta.");
+
+      const identity = getDeveloperIdentity(email);
+      const { data, error } = await authSetupClient.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          data: {
+            name: identity.name,
+            username: identity.username,
+            school: DEFAULT_DEV_SCHOOL,
+            dev_setup_password: masterPassword,
+          },
+          emailRedirectTo: `${window.location.origin}/dev-login`,
+        },
+      });
+
       if (error) throw error;
-      if ((data as any)?.error) throw new Error((data as any).error);
-      toast.success("Conta desenvolvedor criada.");
+      if (!data.user) throw new Error("Não foi possível criar a conta desenvolvedor.");
+
+      toast.success("Conta desenvolvedor criada. Verifique seu e-mail para concluir o acesso.");
       navigate("/dev-login", { replace: true });
     } catch (err) {
       toast.error((err as Error).message);
@@ -45,19 +113,14 @@ export default function DevSetupScreen() {
         </CardHeader>
         <CardContent>
           {step === "master" ? (
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (!masterPassword) return;
-                setStep("form");
-              }}
-              className="space-y-4"
-            >
+            <form onSubmit={handleMasterStep} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="master">Senha mestra</Label>
                 <Input id="master" type="password" value={masterPassword} onChange={(e) => setMasterPassword(e.target.value)} required autoFocus />
               </div>
-              <Button type="submit" className="w-full">Continuar</Button>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? "Validando..." : "Continuar"}
+              </Button>
             </form>
           ) : (
             <form onSubmit={handleCreate} className="space-y-4">
