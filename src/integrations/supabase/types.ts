@@ -608,10 +608,6 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_valid_dev_setup_password: {
-        Args: { _password: string }
-        Returns: boolean
-      }
       unban_user_by_admin: {
         Args: { target_user_id: string }
         Returns: undefined

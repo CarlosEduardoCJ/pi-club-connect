@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createClient } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +9,7 @@ import { toast } from "sonner";
 import { ShieldCheck } from "lucide-react";
 
 const DEFAULT_DEV_SCHOOL = "CETI MANOEL RICARDO";
+const DEV_SETUP_MASTER_PASSWORD = "PI_CLUB_DEV_2026";
 const authSetupClient = createClient(
   import.meta.env.VITE_SUPABASE_URL,
   import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
@@ -49,12 +49,9 @@ export default function DevSetupScreen() {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.rpc("is_valid_dev_setup_password", {
-        _password: masterPassword,
-      });
-
-      if (error) throw error;
-      if (!data) throw new Error("Senha mestra incorreta.");
+      if (masterPassword !== DEV_SETUP_MASTER_PASSWORD) {
+        throw new Error("Senha mestra incorreta.");
+      }
 
       setStep("form");
     } catch (err) {
@@ -67,13 +64,11 @@ export default function DevSetupScreen() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    try {
-      const { data: isValidPassword, error: validationError } = await supabase.rpc("is_valid_dev_setup_password", {
-        _password: masterPassword,
-      });
 
-      if (validationError) throw validationError;
-      if (!isValidPassword) throw new Error("Senha mestra incorreta.");
+    try {
+      if (masterPassword !== DEV_SETUP_MASTER_PASSWORD) {
+        throw new Error("Senha mestra incorreta.");
+      }
 
       const identity = getDeveloperIdentity(email);
       const { data, error } = await authSetupClient.auth.signUp({
@@ -84,7 +79,8 @@ export default function DevSetupScreen() {
             name: identity.name,
             username: identity.username,
             school: DEFAULT_DEV_SCHOOL,
-            dev_setup_password: masterPassword,
+            developer: true,
+            is_developer: true,
           },
           emailRedirectTo: `${window.location.origin}/dev-login`,
         },
