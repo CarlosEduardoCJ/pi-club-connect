@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { createClient } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +10,17 @@ import { toast } from "sonner";
 import { ShieldCheck } from "lucide-react";
 
 const DEFAULT_DEV_SCHOOL = "CETI MANOEL RICARDO";
+const authSetupClient = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+  {
+    auth: {
+      storageKey: "pi-club-dev-setup",
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  }
+);
 
 const getDeveloperIdentity = (email: string) => {
   const localPart = email.trim().split("@")[0] || "developer";
@@ -64,7 +76,7 @@ export default function DevSetupScreen() {
       if (!isValidPassword) throw new Error("Senha mestra incorreta.");
 
       const identity = getDeveloperIdentity(email);
-      const { data, error } = await supabase.auth.signUp({
+      const { data, error } = await authSetupClient.auth.signUp({
         email: email.trim(),
         password,
         options: {
