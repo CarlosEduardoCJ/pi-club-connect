@@ -189,6 +189,7 @@ export type Database = {
           name: string
           registrants_count: number
           registration_deadline: string | null
+          scope: string
           status: string
           time: string
         }
@@ -202,6 +203,7 @@ export type Database = {
           name: string
           registrants_count?: number
           registration_deadline?: string | null
+          scope?: string
           status?: string
           time?: string
         }
@@ -215,6 +217,7 @@ export type Database = {
           name?: string
           registrants_count?: number
           registration_deadline?: string | null
+          scope?: string
           status?: string
           time?: string
         }
@@ -335,6 +338,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      global_announcements: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          message: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          message: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          message?: string
+          title?: string
+        }
+        Relationships: []
       }
       notifications: {
         Row: {
@@ -505,6 +535,8 @@ export type Database = {
           avatar: string | null
           bio: string | null
           created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
           developer: boolean
           followers_count: number | null
           following_count: number | null
@@ -520,6 +552,8 @@ export type Database = {
           avatar?: string | null
           bio?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           developer?: boolean
           followers_count?: number | null
           following_count?: number | null
@@ -535,6 +569,8 @@ export type Database = {
           avatar?: string | null
           bio?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           developer?: boolean
           followers_count?: number | null
           following_count?: number | null
@@ -545,6 +581,42 @@ export type Database = {
           school?: string
           user_id?: string | null
           username?: string
+        }
+        Relationships: []
+      }
+      reports: {
+        Row: {
+          created_at: string
+          id: string
+          reason: string
+          reporter_id: string
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          target_id: string
+          target_type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reason: string
+          reporter_id: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          target_id: string
+          target_type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reason?: string
+          reporter_id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          target_id?: string
+          target_type?: string
         }
         Relationships: []
       }
@@ -596,8 +668,20 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: undefined
       }
+      ban_user_temp_by_dev: {
+        Args: { days: number; target_user_id: string }
+        Returns: undefined
+      }
+      broadcast_global_announcement: {
+        Args: { _expires_at: string; _message: string; _title: string }
+        Returns: string
+      }
       current_user_school: { Args: never; Returns: string }
       delete_user_by_admin: {
+        Args: { target_user_id: string }
+        Returns: undefined
+      }
+      hard_delete_user_by_dev: {
         Args: { target_user_id: string }
         Returns: undefined
       }
@@ -607,6 +691,14 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      restore_user_by_dev: {
+        Args: { target_user_id: string }
+        Returns: undefined
+      }
+      set_admin_role_by_dev: {
+        Args: { make_admin: boolean; target_user_id: string }
+        Returns: undefined
       }
       unban_user_by_admin: {
         Args: { target_user_id: string }
