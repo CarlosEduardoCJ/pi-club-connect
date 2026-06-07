@@ -25,6 +25,7 @@ export interface Competition {
   status: string;
   registration_deadline: string | null;
   registrants_count: number;
+  scope?: string | null;
 }
 
 const statusLabel = (status: string) => {
@@ -33,6 +34,15 @@ const statusLabel = (status: string) => {
     case 'closed': return { text: 'Inscrições Encerradas', color: 'bg-muted text-muted-foreground' };
     case 'finished': return { text: 'Finalizada', color: 'bg-muted text-muted-foreground' };
     default: return { text: status, color: 'bg-muted text-muted-foreground' };
+  }
+};
+
+export const scopeLabel = (scope?: string | null) => {
+  switch (scope) {
+    case 'global': return { text: 'Global', color: 'bg-primary text-primary-foreground' };
+    case 'nacional': return { text: 'Nacional', color: 'bg-accent text-accent-foreground' };
+    case 'estadual_pi': return { text: 'Estadual — Piauí', color: 'bg-secondary text-secondary-foreground' };
+    default: return null;
   }
 };
 
