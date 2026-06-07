@@ -1,6 +1,7 @@
 import { usePosts } from '@/hooks/useSupabaseData';
 import PostCard from '@/components/PostCard';
 import CreatePostDialog from '@/components/CreatePostDialog';
+import GlobalAnnouncementBanner from '@/components/GlobalAnnouncementBanner';
 
 const FeedScreen = () => {
   const { data: posts, isLoading } = usePosts();
@@ -14,6 +15,7 @@ const FeedScreen = () => {
       </header>
 
       <main className="max-w-lg mx-auto p-4 flex flex-col gap-4">
+        <GlobalAnnouncementBanner />
         <CreatePostDialog />
 
         {isLoading ? (
