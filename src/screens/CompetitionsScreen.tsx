@@ -151,26 +151,39 @@ const CompetitionsScreen = () => {
                   if (c.status === 'finished' || c.status === 'closed') return true;
                   return new Date(c.date) < today;
                 };
-                const active = list.filter(c => !isEnded(c));
-                const ended = list.filter(isEnded);
+                const globals = list.filter(c => (c as any).scope && (c as any).scope !== 'local' && !isEnded(c));
+                const locals = list.filter(c => !globals.includes(c));
+                const active = locals.filter(c => !isEnded(c));
+                const ended = locals.filter(isEnded);
                 const refresh = () => queryClient.invalidateQueries({ queryKey: ['competitions'] });
                 return (
-                  <Tabs defaultValue="active" className="w-full">
-                    <TabsList className="grid grid-cols-2 w-full">
-                      <TabsTrigger value="active">Ativas ({active.length})</TabsTrigger>
-                      <TabsTrigger value="ended">Encerradas ({ended.length})</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="active" className="flex flex-col gap-4 mt-4">
-                      {active.length === 0
-                        ? <p className="text-sm text-muted-foreground text-center py-8">Nenhuma competição ativa.</p>
-                        : active.map((c, i) => <CompetitionCard key={c.id} competition={c} index={i} isAdmin={isAdmin} onRefresh={refresh} />)}
-                    </TabsContent>
-                    <TabsContent value="ended" className="flex flex-col gap-4 mt-4">
-                      {ended.length === 0
-                        ? <p className="text-sm text-muted-foreground text-center py-8">Nenhuma competição encerrada.</p>
-                        : ended.map((c, i) => <CompetitionCard key={c.id} competition={c} index={i} isAdmin={isAdmin} onRefresh={refresh} />)}
-                    </TabsContent>
-                  </Tabs>
+                  <>
+                    {globals.length > 0 && (
+                      <div className="flex flex-col gap-3">
+                        <h3 className="text-sm font-bold text-foreground mt-2">🌎 Olimpíadas Globais</h3>
+                        {globals.map((c, i) => (
+                          <CompetitionCard key={c.id} competition={c as any} index={i} isAdmin={false} onRefresh={refresh} />
+                        ))}
+                        <div className="h-px bg-border my-2" />
+                      </div>
+                    )}
+                    <Tabs defaultValue="active" className="w-full">
+                      <TabsList className="grid grid-cols-2 w-full">
+                        <TabsTrigger value="active">Ativas ({active.length})</TabsTrigger>
+                        <TabsTrigger value="ended">Encerradas ({ended.length})</TabsTrigger>
+                      </TabsList>
+                      <TabsContent value="active" className="flex flex-col gap-4 mt-4">
+                        {active.length === 0
+                          ? <p className="text-sm text-muted-foreground text-center py-8">Nenhuma competição ativa.</p>
+                          : active.map((c, i) => <CompetitionCard key={c.id} competition={c as any} index={i} isAdmin={isAdmin} onRefresh={refresh} />)}
+                      </TabsContent>
+                      <TabsContent value="ended" className="flex flex-col gap-4 mt-4">
+                        {ended.length === 0
+                          ? <p className="text-sm text-muted-foreground text-center py-8">Nenhuma competição encerrada.</p>
+                          : ended.map((c, i) => <CompetitionCard key={c.id} competition={c as any} index={i} isAdmin={isAdmin} onRefresh={refresh} />)}
+                      </TabsContent>
+                    </Tabs>
+                  </>
                 );
               })()}
             </motion.div>

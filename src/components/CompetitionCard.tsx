@@ -25,6 +25,7 @@ export interface Competition {
   status: string;
   registration_deadline: string | null;
   registrants_count: number;
+  scope?: string | null;
 }
 
 const statusLabel = (status: string) => {
@@ -33,6 +34,15 @@ const statusLabel = (status: string) => {
     case 'closed': return { text: 'Inscrições Encerradas', color: 'bg-muted text-muted-foreground' };
     case 'finished': return { text: 'Finalizada', color: 'bg-muted text-muted-foreground' };
     default: return { text: status, color: 'bg-muted text-muted-foreground' };
+  }
+};
+
+export const scopeLabel = (scope?: string | null) => {
+  switch (scope) {
+    case 'global': return { text: 'Global', color: 'bg-primary text-primary-foreground' };
+    case 'nacional': return { text: 'Nacional', color: 'bg-accent text-accent-foreground' };
+    case 'estadual_pi': return { text: 'Estadual — Piauí', color: 'bg-secondary text-secondary-foreground' };
+    default: return null;
   }
 };
 
@@ -157,11 +167,16 @@ const CompetitionCard = ({ competition, index, isAdmin, onRefresh }: Competition
         <div className="h-1.5 bg-accent" />
         <div className="p-4">
           <div className="flex items-start justify-between gap-3 mb-2">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <div className="w-7 h-7 rounded-full bg-accent/10 flex items-center justify-center">
                 <Trophy className="w-3.5 h-3.5 text-accent" />
               </div>
               <span className="text-xs font-semibold text-accent">Competição Acadêmica</span>
+              {scopeLabel(competition.scope) && (
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${scopeLabel(competition.scope)!.color}`}>
+                  {scopeLabel(competition.scope)!.text}
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-1">
               <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${status.color}`}>
