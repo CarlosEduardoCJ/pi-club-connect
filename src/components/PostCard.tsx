@@ -1,4 +1,4 @@
-import { Heart, Share2 } from 'lucide-react';
+import { Heart, Share2, MoreVertical, Flag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
@@ -7,6 +7,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import CommentsSection from '@/components/CommentsSection';
 import ProfileAvatar from '@/components/ProfileAvatar';
+import ReportDialog from '@/components/ReportDialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 interface PostDisplay {
   id: string;
