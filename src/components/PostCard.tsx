@@ -93,6 +93,24 @@ const PostCard = ({ post, index }: { post: PostDisplay; index: number }) => {
           </div>
           <span className="text-xs text-accent font-semibold">{post.clubName}</span>
         </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button onClick={(e) => e.stopPropagation()} className="p-1 rounded hover:bg-muted text-muted-foreground" aria-label="Mais opções">
+              <MoreVertical className="w-4 h-4" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+            <ReportDialog
+              targetType="post"
+              targetId={post.id}
+              trigger={
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive">
+                  <Flag className="w-3.5 h-3.5 mr-2" /> Denunciar
+                </DropdownMenuItem>
+              }
+            />
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <p className="text-sm text-foreground leading-relaxed mb-3">{post.content}</p>
