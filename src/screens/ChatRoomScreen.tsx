@@ -107,7 +107,20 @@ const ChatRoomScreen = () => {
                   >
                     {msg.content}
                   </div>
-                  <span className="text-[9px] text-muted-foreground mt-0.5 mx-1">{formatTime(msg.created_at)}</span>
+                  <div className="flex items-center gap-1.5 mt-0.5 mx-1">
+                    <span className="text-[9px] text-muted-foreground">{formatTime(msg.created_at)}</span>
+                    {!isOwn && (
+                      <ReportDialog
+                        targetType="message"
+                        targetId={msg.id}
+                        trigger={
+                          <button className="text-muted-foreground hover:text-destructive transition-colors" aria-label="Denunciar mensagem">
+                            <Flag className="w-3 h-3" />
+                          </button>
+                        }
+                      />
+                    )}
+                  </div>
                 </div>
               </motion.div>
             );
