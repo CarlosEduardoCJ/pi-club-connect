@@ -84,9 +84,9 @@ const ChatListScreen = () => {
               <Zap className="w-5 h-5" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-foreground">Iniciar chat ao vivo</p>
+              <p className="text-sm font-bold text-foreground">Iniciar chat direto</p>
               <p className="text-[11px] text-muted-foreground leading-snug">
-                Conversas em tempo real com usuários da sua escola. Sem histórico — mensagens somem ao sair.
+                Converse com usuários da sua escola. As mensagens ficam salvas no histórico.
               </p>
             </div>
           </Link>
