@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { usePosts } from '@/hooks/useSupabaseData';
 import PostCard from '@/components/PostCard';
 import ProfileAvatar from '@/components/ProfileAvatar';
+import TeacherBadge from '@/components/TeacherBadge';
 import { ArrowLeft, UserPlus, UserCheck } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -23,6 +24,7 @@ interface UserProfile {
   posts_count: number | null;
   followers_count: number | null;
   following_count: number | null;
+  is_teacher?: boolean;
 }
 
 interface ClubInfo {
@@ -125,7 +127,10 @@ const UserProfileScreen = () => {
               fallback={<span className="text-2xl font-extrabold text-primary">{getInitials(user.name)}</span>}
             />
             <div className="flex-1">
-              <h2 className="text-lg font-bold text-foreground">{user.name}</h2>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-lg font-bold text-foreground">{user.name}</h2>
+                {user.is_teacher && <TeacherBadge size="md" />}
+              </div>
               <p className="text-sm text-muted-foreground">@{user.username}</p>
               {user.grade && <p className="text-xs text-accent font-semibold mt-0.5">{user.grade}</p>}
             </div>

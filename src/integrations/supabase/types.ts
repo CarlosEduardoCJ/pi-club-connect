@@ -542,6 +542,7 @@ export type Database = {
           following_count: number | null
           grade: string | null
           id: string
+          is_teacher: boolean
           name: string
           posts_count: number | null
           school: string
@@ -559,6 +560,7 @@ export type Database = {
           following_count?: number | null
           grade?: string | null
           id?: string
+          is_teacher?: boolean
           name: string
           posts_count?: number | null
           school?: string
@@ -576,6 +578,7 @@ export type Database = {
           following_count?: number | null
           grade?: string | null
           id?: string
+          is_teacher?: boolean
           name?: string
           posts_count?: number | null
           school?: string
