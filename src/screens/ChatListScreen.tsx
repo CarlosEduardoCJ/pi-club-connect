@@ -5,15 +5,8 @@ import type { LucideIcon } from 'lucide-react';
 import { Users, User, MessageCirclePlus, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const formatTime = (iso: string | null) => {
-  if (!iso) return '';
-  const d = new Date(iso);
-  const now = new Date();
-  const diff = now.getTime() - d.getTime();
-  if (diff < 86400000) return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-  if (diff < 172800000) return 'Ontem';
-  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-};
+
+
 
 const ChatListScreen = () => {
   const { data: rooms, isLoading } = useChatRooms();
