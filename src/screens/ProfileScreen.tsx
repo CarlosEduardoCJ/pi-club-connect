@@ -6,6 +6,7 @@ import EditProfileDialog from '@/components/EditProfileDialog';
 import ProfileAvatar from '@/components/ProfileAvatar';
 import { Settings, Edit3 } from 'lucide-react';
 import TeacherBadge from '@/components/TeacherBadge';
+import AchievementsBadges from '@/components/AchievementsBadges';
 import * as Icons from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -110,6 +111,12 @@ const ProfileScreen = () => {
               })}
             </div>
           </div>
+
+          <AchievementsBadges
+            postsCount={user.posts_count || 0}
+            followersCount={user.followers_count || 0}
+            createdAt={user.created_at}
+          />
         </motion.div>
 
         <div className="p-4 flex flex-col gap-4">
