@@ -437,7 +437,49 @@ function ReportsTab() {
       if (filter === "pending") q = q.eq("status", "pending");
       const { data, error } = await q;
       if (error) throw error;
-      return data;
+      const reports = data ?? [];
+
+      const postIds = reports.filter((r: any) => r.target_type === "post").map((r: any) => r.target_id);
+      const msgIds = reports.filter((r: any) => r.target_type === "message").map((r: any) => r.target_id);
+
+      const [postsRes, dmsRes, chatRes] = await Promise.all([
+        postIds.length
+          ? supabase.from("posts").select("id, content, profiles!posts_author_id_fkey(name, username)").in("id", postIds)
+          : Promise.resolve({ data: [] as any[] }),
+        msgIds.length
+          ? supabase.from("direct_messages").select("id, content, sender:profiles!direct_messages_sender_id_fkey(name, username)").in("id", msgIds)
+          : Promise.resolve({ data: [] as any[] }),
+        msgIds.length
+          ? supabase.from("chat_messages").select("id, content, profiles!chat_messages_sender_id_fkey(name, username)").in("id", msgIds)
+          : Promise.resolve({ data: [] as any[] }),
+      ]);
+
+      const postMap = new Map<string, any>((postsRes.data ?? []).map((p: any) => [p.id, p]));
+      const dmMap = new Map<string, any>((dmsRes.data ?? []).map((m: any) => [m.id, m]));
+      const chatMap = new Map<string, any>((chatRes.data ?? []).map((m: any) => [m.id, m]));
+
+      return reports.map((r: any) => {
+        let content: string | null = null;
+        let authorName: string | null = null;
+        let authorUsername: string | null = null;
+        if (r.target_type === "post") {
+          const p = postMap.get(r.target_id);
+          if (p) {
+            content = p.content;
+            authorName = p.profiles?.name ?? null;
+            authorUsername = p.profiles?.username ?? null;
+          }
+        } else {
+          const m = dmMap.get(r.target_id) || chatMap.get(r.target_id);
+          if (m) {
+            content = m.content;
+            const prof = m.sender ?? m.profiles;
+            authorName = prof?.name ?? null;
+            authorUsername = prof?.username ?? null;
+          }
+        }
+        return { ...r, _content: content, _authorName: authorName, _authorUsername: authorUsername };
+      });
     },
   });
 
@@ -451,9 +493,17 @@ function ReportsTab() {
 
   const deleteTarget = async (r: any) => {
     if (!confirm(`Excluir ${r.target_type === "post" ? "post" : "mensagem"} denunciado(a)?`)) return;
-    const table = r.target_type === "post" ? "posts" : "chat_messages";
-    const { error } = await supabase.from(table as any).delete().eq("id", r.target_id);
-    if (error) { toast.error(error.message); return; }
+    if (r.target_type === "post") {
+      const { error } = await supabase.from("posts").delete().eq("id", r.target_id);
+      if (error) { toast.error(error.message); return; }
+    } else {
+      // tenta DM, depois chat de clube
+      const { error: e1 } = await supabase.from("direct_messages").delete().eq("id", r.target_id);
+      if (e1) {
+        const { error: e2 } = await supabase.from("chat_messages").delete().eq("id", r.target_id);
+        if (e2) { toast.error(e2.message); return; }
+      }
+    }
     await resolve(r.id, "resolved");
   };
 
@@ -480,11 +530,22 @@ function ReportsTab() {
                   </div>
                   <span className="text-[10px] text-muted-foreground">{new Date(r.created_at).toLocaleString("pt-BR")}</span>
                 </div>
-                <p className="text-sm">{r.reason}</p>
-                <p className="text-[10px] text-muted-foreground font-mono">id: {r.target_id}</p>
+
+                <div className="rounded-md border bg-muted/30 p-2">
+                  <p className="text-[11px] text-muted-foreground mb-1">
+                    Autor: {r._authorName ? <span className="font-medium text-foreground">{r._authorName}</span> : <span className="italic">desconhecido</span>}
+                    {r._authorUsername && <span> · @{r._authorUsername}</span>}
+                  </p>
+                  <p className="text-sm whitespace-pre-wrap break-words">
+                    {r._content ?? <span className="italic text-muted-foreground">Conteúdo indisponível (já removido ou mensagem de chat ao vivo).</span>}
+                  </p>
+                </div>
+
+                <p className="text-xs"><span className="text-muted-foreground">Motivo:</span> {r.reason}</p>
+
                 {r.status === "pending" && (
                   <div className="flex gap-1 flex-wrap">
-                    <Button size="sm" variant="default" onClick={() => deleteTarget(r)}>Excluir conteúdo</Button>
+                    <Button size="sm" variant="default" onClick={() => deleteTarget(r)} disabled={!r._content}>Excluir conteúdo</Button>
                     <Button size="sm" variant="outline" onClick={() => resolve(r.id, "resolved")}>Resolver</Button>
                     <Button size="sm" variant="ghost" onClick={() => resolve(r.id, "ignored")}>Ignorar</Button>
                   </div>
@@ -498,6 +559,7 @@ function ReportsTab() {
     </div>
   );
 }
+
 
 /* ---------- ANNOUNCEMENTS ---------- */
 function AnnouncementsTab() {
