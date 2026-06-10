@@ -5,6 +5,7 @@ import PostCard from '@/components/PostCard';
 import EditProfileDialog from '@/components/EditProfileDialog';
 import ProfileAvatar from '@/components/ProfileAvatar';
 import { Settings, Edit3 } from 'lucide-react';
+import TeacherBadge from '@/components/TeacherBadge';
 import * as Icons from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -61,7 +62,10 @@ const ProfileScreen = () => {
               fallback={<span className="text-2xl font-extrabold text-primary">{getInitials(user.name)}</span>}
             />
             <div className="flex-1">
-              <h2 className="text-lg font-bold text-foreground">{user.name}</h2>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-lg font-bold text-foreground">{user.name}</h2>
+                {(user as { is_teacher?: boolean }).is_teacher && <TeacherBadge size="md" />}
+              </div>
               <p className="text-sm text-muted-foreground">{user.username}</p>
               <p className="text-xs text-accent font-semibold mt-0.5">{user.grade}</p>
             </div>
