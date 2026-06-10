@@ -147,6 +147,7 @@ function OlympiadsTab() {
   });
 
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<any | null>(null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
@@ -154,15 +155,35 @@ function OlympiadsTab() {
   const [status, setStatus] = useState<"open" | "closed">("open");
   const [scope, setScope] = useState<ScopeOpt>("nacional");
 
-  const reset = () => { setName(""); setDescription(""); setDate(""); setLocation(""); setStatus("open"); setScope("nacional"); };
+  const reset = () => { setEditing(null); setName(""); setDescription(""); setDate(""); setLocation(""); setStatus("open"); setScope("nacional"); };
 
-  const create = async () => {
+  const openCreate = () => { reset(); setOpen(true); };
+  const openEdit = (c: any) => {
+    setEditing(c);
+    setName(c.name ?? "");
+    setDescription(c.description ?? "");
+    setDate(c.date ? String(c.date).slice(0, 10) : "");
+    setLocation(c.location ?? "");
+    setStatus((c.status as "open" | "closed") ?? "open");
+    setScope((c.scope as ScopeOpt) ?? "nacional");
+    setOpen(true);
+  };
+
+  const submit = async () => {
     if (!name.trim() || !date) { toast.error("Preencha nome e data"); return; }
-    const { error } = await supabase.from("competitions").insert({
-      name, description, date, time: "", location: location || "Online", status, scope,
-    } as any);
-    if (error) { toast.error("Erro: " + error.message); return; }
-    toast.success("Olimpíada cadastrada para todas as escolas!");
+    if (editing) {
+      const { error } = await supabase.from("competitions").update({
+        name, description, date, location: location || "Online", status, scope,
+      } as any).eq("id", editing.id);
+      if (error) { toast.error("Erro: " + error.message); return; }
+      toast.success("Olimpíada atualizada!");
+    } else {
+      const { error } = await supabase.from("competitions").insert({
+        name, description, date, time: "", location: location || "Online", status, scope,
+      } as any);
+      if (error) { toast.error("Erro: " + error.message); return; }
+      toast.success("Olimpíada cadastrada para todas as escolas!");
+    }
     setOpen(false); reset();
     qc.invalidateQueries({ queryKey: ["dev-olympiads"] });
     qc.invalidateQueries({ queryKey: ["competitions"] });
@@ -187,12 +208,10 @@ function OlympiadsTab() {
 
   return (
     <div>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
-          <Button className="mb-3"><Plus className="w-4 h-4 mr-1" />Nova olimpíada</Button>
-        </DialogTrigger>
+      <Button className="mb-3" onClick={openCreate}><Plus className="w-4 h-4 mr-1" />Nova olimpíada</Button>
+      <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) reset(); }}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Cadastrar Olimpíada Global</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{editing ? "Editar Olimpíada" : "Cadastrar Olimpíada Global"}</DialogTitle></DialogHeader>
           <div className="flex flex-col gap-3">
             <Input placeholder="Nome" value={name} onChange={(e) => setName(e.target.value)} />
             <Textarea placeholder="Descrição" value={description} onChange={(e) => setDescription(e.target.value)} />
@@ -213,7 +232,7 @@ function OlympiadsTab() {
                 <SelectItem value="estadual_pi">Estadual — Piauí</SelectItem>
               </SelectContent>
             </Select>
-            <Button onClick={create}>Cadastrar</Button>
+            <Button onClick={submit}>{editing ? "Salvar alterações" : "Cadastrar"}</Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -231,6 +250,7 @@ function OlympiadsTab() {
                 <p className="text-xs text-muted-foreground">{new Date(c.date).toLocaleDateString("pt-BR")} · {c.location}</p>
               </div>
               <div className="flex items-center gap-1">
+                <Button size="sm" variant="outline" onClick={() => openEdit(c)}>Editar</Button>
                 <Button size="sm" variant="outline" onClick={() => toggleStatus(c.id, c.status)}>{c.status === "open" ? "Encerrar" : "Reabrir"}</Button>
                 <Button size="sm" variant="ghost" onClick={() => remove(c.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
               </div>
@@ -242,6 +262,7 @@ function OlympiadsTab() {
     </div>
   );
 }
+
 
 /* ---------- USERS ---------- */
 function UsersTab() {
