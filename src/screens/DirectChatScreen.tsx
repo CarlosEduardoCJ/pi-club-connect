@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { ArrowLeft, Send, Smile, Flag, Trash2, Check, CheckCheck } from "lucide-react";
+import { ArrowLeft, Send, Flag, Trash2, Check, CheckCheck } from "lucide-react";
 import TeacherBadge from "@/components/TeacherBadge";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -17,7 +17,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -32,20 +31,34 @@ interface OtherProfile {
   school: string;
 }
 
-interface DMMessage {
+interface DBMessage {
   id: string;
-  sender_id: string; // profileId of sender
+  sender_id: string;
+  recipient_id: string;
   content: string;
-  created_at: number;
-  deleted?: boolean;
-  reactions?: Record<string, string[]>; // emoji -> profileIds
-  readBy?: string[]; // profileIds
+  deleted: boolean;
+  reactions: Record<string, string[]> | null;
+  read_at: string | null;
+  created_at: string;
 }
 
 const MAX_LEN = 300;
 const EMOJIS = ["❤️", "😂", "😮", "😢", "👍", "🔥"];
-const formatTime = (ms: number) =>
-  new Date(ms).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+
+const formatTime = (iso: string) =>
+  new Date(iso).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+
+const formatDay = (iso: string) => {
+  const d = new Date(iso);
+  const today = new Date();
+  const yest = new Date();
+  yest.setDate(today.getDate() - 1);
+  const sameDay = (a: Date, b: Date) =>
+    a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  if (sameDay(d, today)) return "Hoje";
+  if (sameDay(d, yest)) return "Ontem";
+  return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
+};
 
 const getInitials = (n: string) =>
   n.split(" ").map((p) => p[0]).join("").slice(0, 2).toUpperCase();
@@ -58,25 +71,24 @@ export default function DirectChatScreen() {
   const [me, setMe] = useState<{ school: string; name: string } | null>(null);
   const [other, setOther] = useState<OtherProfile | null>(null);
   const [authorized, setAuthorized] = useState<boolean | null>(null);
-  const [messages, setMessages] = useState<DMMessage[]>([]);
+  const [messages, setMessages] = useState<DBMessage[]>([]);
   const [input, setInput] = useState("");
   const [otherTyping, setOtherTyping] = useState(false);
   const [otherOnline, setOtherOnline] = useState(false);
-  const [reportOpen, setReportOpen] = useState<DMMessage | null>(null);
+  const [reportOpen, setReportOpen] = useState<DBMessage | null>(null);
   const [reportReason, setReportReason] = useState("");
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const otherTypingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Channel name based on sorted profile IDs (deterministic)
-  const channelName = useMemo(() => {
+  const presenceChannelName = useMemo(() => {
     if (!profileId || !otherId) return null;
     const [a, b] = [profileId, otherId].sort();
-    return `dm:${a}:${b}`;
+    return `dm-presence:${a}:${b}`;
   }, [profileId, otherId]);
 
-  // Load profiles + authorization (same school)
+  // Load profiles + authorization
   useEffect(() => {
     if (!profileId || !otherId) return;
     (async () => {
@@ -88,69 +100,98 @@ export default function DirectChatScreen() {
           .eq("id", otherId)
           .maybeSingle(),
       ]);
-      if (!meData || !otherData) {
-        setAuthorized(false);
-        return;
-      }
+      if (!meData || !otherData) { setAuthorized(false); return; }
       setMe({ school: meData.school, name: meData.name });
-      if (otherData.deleted_at || otherData.school !== meData.school) {
-        setAuthorized(false);
-        return;
-      }
+      if (otherData.deleted_at || otherData.school !== meData.school) { setAuthorized(false); return; }
       setOther(otherData as OtherProfile);
       setAuthorized(true);
     })();
   }, [profileId, otherId]);
 
-  // Setup realtime channel
+  // Load history + realtime
   useEffect(() => {
-    if (!channelName || !profileId || authorized !== true) return;
+    if (!profileId || !otherId || authorized !== true) return;
 
-    const channel = supabase.channel(channelName, {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("direct_messages")
+        .select("*")
+        .or(
+          `and(sender_id.eq.${profileId},recipient_id.eq.${otherId}),and(sender_id.eq.${otherId},recipient_id.eq.${profileId})`,
+        )
+        .order("created_at", { ascending: true })
+        .limit(500);
+      if (cancelled) return;
+      setMessages((data as DBMessage[]) || []);
+      // mark all incoming unread as read
+      const unread = (data || []).filter(
+        (m: any) => m.recipient_id === profileId && !m.read_at,
+      );
+      if (unread.length) {
+        await supabase
+          .from("direct_messages")
+          .update({ read_at: new Date().toISOString() })
+          .in("id", unread.map((m: any) => m.id));
+      }
+    })();
+
+    const ch = supabase
+      .channel(`dm-db:${[profileId, otherId].sort().join(":")}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "direct_messages" },
+        (payload) => {
+          const m = payload.new as DBMessage;
+          const isPair =
+            (m.sender_id === profileId && m.recipient_id === otherId) ||
+            (m.sender_id === otherId && m.recipient_id === profileId);
+          if (!isPair) return;
+          setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]));
+          if (m.recipient_id === profileId && !m.read_at) {
+            supabase
+              .from("direct_messages")
+              .update({ read_at: new Date().toISOString() })
+              .eq("id", m.id);
+          }
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "direct_messages" },
+        (payload) => {
+          const m = payload.new as DBMessage;
+          const isPair =
+            (m.sender_id === profileId && m.recipient_id === otherId) ||
+            (m.sender_id === otherId && m.recipient_id === profileId);
+          if (!isPair) return;
+          setMessages((prev) => prev.map((x) => (x.id === m.id ? m : x)));
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "direct_messages" },
+        (payload) => {
+          const m = payload.old as DBMessage;
+          setMessages((prev) => prev.filter((x) => x.id !== m.id));
+        },
+      )
+      .subscribe();
+
+    return () => {
+      cancelled = true;
+      supabase.removeChannel(ch);
+    };
+  }, [profileId, otherId, authorized]);
+
+  // Presence + typing channel
+  useEffect(() => {
+    if (!presenceChannelName || !profileId || authorized !== true) return;
+    const channel = supabase.channel(presenceChannelName, {
       config: { presence: { key: profileId }, broadcast: { self: false } },
     });
     channelRef.current = channel;
-
     channel
-      .on("broadcast", { event: "message" }, ({ payload }) => {
-        const msg = payload as DMMessage;
-        setMessages((prev) => [...prev, msg]);
-        // send read receipt
-        channel.send({
-          type: "broadcast",
-          event: "read",
-          payload: { messageId: msg.id, readerId: profileId },
-        });
-      })
-      .on("broadcast", { event: "delete" }, ({ payload }) => {
-        setMessages((prev) =>
-          prev.map((m) => (m.id === payload.messageId ? { ...m, deleted: true } : m)),
-        );
-      })
-      .on("broadcast", { event: "reaction" }, ({ payload }) => {
-        setMessages((prev) =>
-          prev.map((m) => {
-            if (m.id !== payload.messageId) return m;
-            const reactions = { ...(m.reactions || {}) };
-            const list = new Set(reactions[payload.emoji] || []);
-            if (list.has(payload.reactorId)) list.delete(payload.reactorId);
-            else list.add(payload.reactorId);
-            if (list.size === 0) delete reactions[payload.emoji];
-            else reactions[payload.emoji] = Array.from(list);
-            return { ...m, reactions };
-          }),
-        );
-      })
-      .on("broadcast", { event: "read" }, ({ payload }) => {
-        setMessages((prev) =>
-          prev.map((m) => {
-            if (m.id !== payload.messageId) return m;
-            const set = new Set(m.readBy || []);
-            set.add(payload.readerId);
-            return { ...m, readBy: Array.from(set) };
-          }),
-        );
-      })
       .on("broadcast", { event: "typing" }, ({ payload }) => {
         if (payload.from === profileId) return;
         setOtherTyping(true);
@@ -166,12 +207,11 @@ export default function DirectChatScreen() {
           await channel.track({ profileId, online_at: Date.now() });
         }
       });
-
     return () => {
       supabase.removeChannel(channel);
       channelRef.current = null;
     };
-  }, [channelName, profileId, otherId, authorized]);
+  }, [presenceChannelName, profileId, otherId, authorized]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -179,11 +219,7 @@ export default function DirectChatScreen() {
 
   const broadcastTyping = useCallback(() => {
     if (!channelRef.current || !profileId) return;
-    channelRef.current.send({
-      type: "broadcast",
-      event: "typing",
-      payload: { from: profileId },
-    });
+    channelRef.current.send({ type: "broadcast", event: "typing", payload: { from: profileId } });
   }, [profileId]);
 
   const onInputChange = (v: string) => {
@@ -193,59 +229,43 @@ export default function DirectChatScreen() {
     typingTimeoutRef.current = setTimeout(broadcastTyping, 200);
   };
 
-  const handleSend = () => {
+  const handleSend = async () => {
     const text = input.trim();
-    if (!text || !profileId || !channelRef.current) return;
+    if (!text || !profileId || !otherId) return;
     if (containsProfanity(text)) {
       toast.error("Sua mensagem contém conteúdo inadequado e não pode ser enviada.");
       return;
     }
     if (text.length > MAX_LEN) return;
-    const msg: DMMessage = {
-      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      sender_id: profileId,
-      content: text,
-      created_at: Date.now(),
-      reactions: {},
-      readBy: [],
-    };
-    setMessages((prev) => [...prev, msg]);
-    channelRef.current.send({ type: "broadcast", event: "message", payload: msg });
     setInput("");
+    const { error } = await supabase.from("direct_messages").insert({
+      sender_id: profileId,
+      recipient_id: otherId,
+      content: text,
+    });
+    if (error) {
+      toast.error("Não foi possível enviar.");
+      setInput(text);
+    }
   };
 
-  const handleDelete = (msg: DMMessage) => {
-    if (!channelRef.current || !profileId || msg.sender_id !== profileId) return;
-    setMessages((prev) =>
-      prev.map((m) => (m.id === msg.id ? { ...m, deleted: true } : m)),
-    );
-    channelRef.current.send({
-      type: "broadcast",
-      event: "delete",
-      payload: { messageId: msg.id },
-    });
+  const handleDelete = async (msg: DBMessage) => {
+    if (msg.sender_id !== profileId) return;
+    await supabase
+      .from("direct_messages")
+      .update({ deleted: true, content: "" })
+      .eq("id", msg.id);
   };
 
-  const handleReact = (msg: DMMessage, emoji: string) => {
-    if (!channelRef.current || !profileId) return;
-    // Optimistic local toggle
-    setMessages((prev) =>
-      prev.map((m) => {
-        if (m.id !== msg.id) return m;
-        const reactions = { ...(m.reactions || {}) };
-        const list = new Set(reactions[emoji] || []);
-        if (list.has(profileId)) list.delete(profileId);
-        else list.add(profileId);
-        if (list.size === 0) delete reactions[emoji];
-        else reactions[emoji] = Array.from(list);
-        return { ...m, reactions };
-      }),
-    );
-    channelRef.current.send({
-      type: "broadcast",
-      event: "reaction",
-      payload: { messageId: msg.id, emoji, reactorId: profileId },
-    });
+  const handleReact = async (msg: DBMessage, emoji: string) => {
+    if (!profileId) return;
+    const reactions = { ...(msg.reactions || {}) };
+    const list = new Set(reactions[emoji] || []);
+    if (list.has(profileId)) list.delete(profileId);
+    else list.add(profileId);
+    if (list.size === 0) delete reactions[emoji];
+    else reactions[emoji] = Array.from(list);
+    await supabase.from("direct_messages").update({ reactions }).eq("id", msg.id);
   };
 
   const submitReport = async () => {
@@ -254,7 +274,6 @@ export default function DirectChatScreen() {
       toast.error("Descreva o motivo (mín. 5 caracteres).");
       return;
     }
-    // 1) Insert in reports
     const { error } = await supabase.from("reports").insert({
       reporter_id: user.id,
       target_type: "message",
@@ -264,7 +283,6 @@ export default function DirectChatScreen() {
       reported_user_id: other.user_id,
     } as never);
     if (error) {
-      // Fallback if columns absent
       await supabase.from("reports").insert({
         reporter_id: user.id,
         target_type: "message",
@@ -272,7 +290,6 @@ export default function DirectChatScreen() {
         reason: `[DM ${other.name}] ${reportOpen.content}\nMotivo: ${reportReason.trim()}`.slice(0, 500),
       });
     }
-    // 2) Notify school admins immediately
     const { data: admins } = await supabase
       .from("user_roles")
       .select("user_id")
@@ -287,14 +304,14 @@ export default function DirectChatScreen() {
       const rows = (adminProfiles || []).map((p) => ({
         profile_id: p.id,
         type: "report",
-        message: `Denúncia de mensagem no chat direto entre ${me?.name} e ${other.name}: "${reportOpen.content.slice(0, 120)}" — Motivo: ${reportReason.trim().slice(0, 160)}`,
+        message: `Denúncia de mensagem entre ${me?.name} e ${other.name}: "${reportOpen.content.slice(0, 120)}" — Motivo: ${reportReason.trim().slice(0, 160)}`,
         from_user: me?.name || "Usuário",
         from_avatar: "",
         is_read: false,
       }));
       if (rows.length) await supabase.from("notifications").insert(rows);
     }
-    toast.success("Denúncia enviada ao admin da escola.");
+    toast.success("Denúncia enviada.");
     setReportOpen(null);
     setReportReason("");
   };
@@ -318,6 +335,9 @@ export default function DirectChatScreen() {
   }
 
   const remaining = MAX_LEN - input.length;
+
+  // Group messages by day
+  let lastDay = "";
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -348,10 +368,6 @@ export default function DirectChatScreen() {
         </div>
       </header>
 
-      <div className="bg-muted/40 border-b border-border px-4 py-1.5 text-[10px] text-center text-muted-foreground">
-        Chat ao vivo — mensagens não são salvas e somem ao sair.
-      </div>
-
       <main className="flex-1 overflow-y-auto px-4 py-4">
         <div className="max-w-lg mx-auto flex flex-col gap-2">
           {messages.length === 0 && (
@@ -362,97 +378,105 @@ export default function DirectChatScreen() {
           <AnimatePresence initial={false}>
             {messages.map((msg) => {
               const isOwn = msg.sender_id === profileId;
-              const readByOther = (msg.readBy || []).includes(otherId!);
+              const readByOther = isOwn && !!msg.read_at;
+              const day = formatDay(msg.created_at);
+              const showDay = day !== lastDay;
+              lastDay = day;
               return (
-                <motion.div
-                  key={msg.id}
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
-                >
-                  <div className={`max-w-[78%] flex flex-col ${isOwn ? "items-end" : "items-start"}`}>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <button
-                          className={`px-3.5 py-2 rounded-2xl text-sm leading-relaxed text-left ${
-                            isOwn
-                              ? "bg-primary text-primary-foreground rounded-br-md"
-                              : "bg-card text-foreground rounded-bl-md"
-                          } ${msg.deleted ? "italic opacity-60" : ""}`}
-                          style={!isOwn ? { boxShadow: "var(--shadow-card)" } : undefined}
-                        >
-                          {msg.deleted ? "Mensagem apagada" : msg.content}
-                        </button>
-                      </PopoverTrigger>
-                      {!msg.deleted && (
-                        <PopoverContent className="w-auto p-1.5" align={isOwn ? "end" : "start"}>
-                          <div className="flex items-center gap-1">
-                            {EMOJIS.map((e) => (
-                              <button
-                                key={e}
-                                onClick={() => handleReact(msg, e)}
-                                className="text-lg hover:scale-125 transition-transform p-1"
-                              >
-                                {e}
-                              </button>
-                            ))}
-                          </div>
-                          <div className="flex items-center gap-1 border-t border-border mt-1 pt-1">
-                            {isOwn && (
-                              <button
-                                onClick={() => handleDelete(msg)}
-                                className="flex items-center gap-1 text-xs text-destructive px-2 py-1 hover:bg-destructive/10 rounded"
-                              >
-                                <Trash2 className="w-3 h-3" /> Apagar
-                              </button>
-                            )}
-                            {!isOwn && (
-                              <button
-                                onClick={() => {
-                                  setReportOpen(msg);
-                                  setReportReason("");
-                                }}
-                                className="flex items-center gap-1 text-xs text-destructive px-2 py-1 hover:bg-destructive/10 rounded"
-                              >
-                                <Flag className="w-3 h-3" /> Denunciar
-                              </button>
-                            )}
-                          </div>
-                        </PopoverContent>
-                      )}
-                    </Popover>
-
-                    {/* Reactions */}
-                    {msg.reactions && Object.keys(msg.reactions).length > 0 && (
-                      <div className="flex gap-1 mt-0.5 mx-1 flex-wrap">
-                        {Object.entries(msg.reactions).map(([emoji, ids]) => (
-                          <button
-                            key={emoji}
-                            onClick={() => handleReact(msg, emoji)}
-                            className="text-[11px] bg-card border border-border rounded-full px-1.5 py-0.5 flex items-center gap-0.5"
-                          >
-                            <span>{emoji}</span>
-                            <span className="text-muted-foreground">{ids.length}</span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-
-                    <div className="flex items-center gap-1 mt-0.5 mx-1">
-                      <span className="text-[9px] text-muted-foreground">
-                        {formatTime(msg.created_at)}
+                <div key={msg.id}>
+                  {showDay && (
+                    <div className="text-center my-3">
+                      <span className="text-[10px] bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
+                        {day}
                       </span>
-                      {isOwn && !msg.deleted && (
-                        readByOther ? (
-                          <CheckCheck className="w-3 h-3 text-accent" />
-                        ) : (
-                          <Check className="w-3 h-3 text-muted-foreground" />
-                        )
-                      )}
                     </div>
-                  </div>
-                </motion.div>
+                  )}
+                  <motion.div
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
+                  >
+                    <div className={`max-w-[78%] flex flex-col ${isOwn ? "items-end" : "items-start"}`}>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <button
+                            className={`px-3.5 py-2 rounded-2xl text-sm leading-relaxed text-left ${
+                              isOwn
+                                ? "bg-primary text-primary-foreground rounded-br-md"
+                                : "bg-card text-foreground rounded-bl-md"
+                            } ${msg.deleted ? "italic opacity-60" : ""}`}
+                            style={!isOwn ? { boxShadow: "var(--shadow-card)" } : undefined}
+                          >
+                            {msg.deleted ? "Mensagem apagada" : msg.content}
+                          </button>
+                        </PopoverTrigger>
+                        {!msg.deleted && (
+                          <PopoverContent className="w-auto p-1.5" align={isOwn ? "end" : "start"}>
+                            <div className="flex items-center gap-1">
+                              {EMOJIS.map((e) => (
+                                <button
+                                  key={e}
+                                  onClick={() => handleReact(msg, e)}
+                                  className="text-lg hover:scale-125 transition-transform p-1"
+                                >
+                                  {e}
+                                </button>
+                              ))}
+                            </div>
+                            <div className="flex items-center gap-1 border-t border-border mt-1 pt-1">
+                              {isOwn && (
+                                <button
+                                  onClick={() => handleDelete(msg)}
+                                  className="flex items-center gap-1 text-xs text-destructive px-2 py-1 hover:bg-destructive/10 rounded"
+                                >
+                                  <Trash2 className="w-3 h-3" /> Apagar
+                                </button>
+                              )}
+                              {!isOwn && (
+                                <button
+                                  onClick={() => {
+                                    setReportOpen(msg);
+                                    setReportReason("");
+                                  }}
+                                  className="flex items-center gap-1 text-xs text-destructive px-2 py-1 hover:bg-destructive/10 rounded"
+                                >
+                                  <Flag className="w-3 h-3" /> Denunciar
+                                </button>
+                              )}
+                            </div>
+                          </PopoverContent>
+                        )}
+                      </Popover>
+
+                      {msg.reactions && Object.keys(msg.reactions).length > 0 && (
+                        <div className="flex gap-1 mt-0.5 mx-1 flex-wrap">
+                          {Object.entries(msg.reactions).map(([emoji, ids]) => (
+                            <button
+                              key={emoji}
+                              onClick={() => handleReact(msg, emoji)}
+                              className="text-[11px] bg-card border border-border rounded-full px-1.5 py-0.5 flex items-center gap-0.5"
+                            >
+                              <span>{emoji}</span>
+                              <span className="text-muted-foreground">{ids.length}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="flex items-center gap-1 mt-0.5 mx-1">
+                        <span className="text-[9px] text-muted-foreground">{formatTime(msg.created_at)}</span>
+                        {isOwn && !msg.deleted && (
+                          readByOther ? (
+                            <CheckCheck className="w-3 h-3 text-accent" />
+                          ) : (
+                            <Check className="w-3 h-3 text-muted-foreground" />
+                          )
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
               );
             })}
           </AnimatePresence>
@@ -481,11 +505,7 @@ export default function DirectChatScreen() {
               className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground resize-none outline-none max-h-24"
             />
             <div className="flex justify-end">
-              <span
-                className={`text-[10px] ${
-                  remaining <= 30 ? "text-destructive" : "text-muted-foreground"
-                }`}
-              >
+              <span className={`text-[10px] ${remaining <= 30 ? "text-destructive" : "text-muted-foreground"}`}>
                 {remaining}
               </span>
             </div>
