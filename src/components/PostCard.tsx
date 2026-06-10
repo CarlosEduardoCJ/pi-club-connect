@@ -1,4 +1,5 @@
-import { Heart, Share2, MoreVertical, Flag } from 'lucide-react';
+import { Heart, Share2, MoreVertical, Flag, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
@@ -100,15 +101,31 @@ const PostCard = ({ post, index }: { post: PostDisplay; index: number }) => {
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-            <ReportDialog
-              targetType="post"
-              targetId={post.id}
-              trigger={
-                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive">
-                  <Flag className="w-3.5 h-3.5 mr-2" /> Denunciar
-                </DropdownMenuItem>
-              }
-            />
+            {profileId && post.authorId === profileId ? (
+              <DropdownMenuItem
+                onSelect={async (e) => {
+                  e.preventDefault();
+                  if (!confirm('Apagar este post?')) return;
+                  const { error } = await supabase.from('posts').delete().eq('id', post.id);
+                  if (error) { toast.error('Erro ao apagar'); return; }
+                  toast.success('Post apagado');
+                  queryClient.invalidateQueries({ queryKey: ['posts'] });
+                }}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="w-3.5 h-3.5 mr-2" /> Apagar post
+              </DropdownMenuItem>
+            ) : (
+              <ReportDialog
+                targetType="post"
+                targetId={post.id}
+                trigger={
+                  <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive">
+                    <Flag className="w-3.5 h-3.5 mr-2" /> Denunciar
+                  </DropdownMenuItem>
+                }
+              />
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
