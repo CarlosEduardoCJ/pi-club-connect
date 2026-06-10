@@ -5,15 +5,8 @@ import type { LucideIcon } from 'lucide-react';
 import { Users, User, MessageCirclePlus, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const formatTime = (iso: string | null) => {
-  if (!iso) return '';
-  const d = new Date(iso);
-  const now = new Date();
-  const diff = now.getTime() - d.getTime();
-  if (diff < 86400000) return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-  if (diff < 172800000) return 'Ontem';
-  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-};
+
+
 
 const ChatListScreen = () => {
   const { data: rooms, isLoading } = useChatRooms();
@@ -58,12 +51,10 @@ const ChatListScreen = () => {
                       <Icon className="w-5 h-5 text-primary" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-bold text-foreground truncate">{room.name}</p>
-                        <span className="text-[10px] text-muted-foreground shrink-0 ml-2">{formatTime(room.last_message_time)}</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground truncate mt-0.5">{room.last_message}</p>
+                      <p className="text-sm font-bold text-foreground truncate">{room.name}</p>
+                      <p className="text-[11px] text-muted-foreground truncate mt-0.5">Chat ao vivo</p>
                     </div>
+
                   </Link>
                 </motion.div>
               );

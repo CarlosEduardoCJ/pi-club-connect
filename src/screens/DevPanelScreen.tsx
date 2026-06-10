@@ -147,6 +147,7 @@ function OlympiadsTab() {
   });
 
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<any | null>(null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
@@ -154,15 +155,35 @@ function OlympiadsTab() {
   const [status, setStatus] = useState<"open" | "closed">("open");
   const [scope, setScope] = useState<ScopeOpt>("nacional");
 
-  const reset = () => { setName(""); setDescription(""); setDate(""); setLocation(""); setStatus("open"); setScope("nacional"); };
+  const reset = () => { setEditing(null); setName(""); setDescription(""); setDate(""); setLocation(""); setStatus("open"); setScope("nacional"); };
 
-  const create = async () => {
+  const openCreate = () => { reset(); setOpen(true); };
+  const openEdit = (c: any) => {
+    setEditing(c);
+    setName(c.name ?? "");
+    setDescription(c.description ?? "");
+    setDate(c.date ? String(c.date).slice(0, 10) : "");
+    setLocation(c.location ?? "");
+    setStatus((c.status as "open" | "closed") ?? "open");
+    setScope((c.scope as ScopeOpt) ?? "nacional");
+    setOpen(true);
+  };
+
+  const submit = async () => {
     if (!name.trim() || !date) { toast.error("Preencha nome e data"); return; }
-    const { error } = await supabase.from("competitions").insert({
-      name, description, date, time: "", location: location || "Online", status, scope,
-    } as any);
-    if (error) { toast.error("Erro: " + error.message); return; }
-    toast.success("Olimpíada cadastrada para todas as escolas!");
+    if (editing) {
+      const { error } = await supabase.from("competitions").update({
+        name, description, date, location: location || "Online", status, scope,
+      } as any).eq("id", editing.id);
+      if (error) { toast.error("Erro: " + error.message); return; }
+      toast.success("Olimpíada atualizada!");
+    } else {
+      const { error } = await supabase.from("competitions").insert({
+        name, description, date, time: "", location: location || "Online", status, scope,
+      } as any);
+      if (error) { toast.error("Erro: " + error.message); return; }
+      toast.success("Olimpíada cadastrada para todas as escolas!");
+    }
     setOpen(false); reset();
     qc.invalidateQueries({ queryKey: ["dev-olympiads"] });
     qc.invalidateQueries({ queryKey: ["competitions"] });
@@ -187,12 +208,10 @@ function OlympiadsTab() {
 
   return (
     <div>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
-          <Button className="mb-3"><Plus className="w-4 h-4 mr-1" />Nova olimpíada</Button>
-        </DialogTrigger>
+      <Button className="mb-3" onClick={openCreate}><Plus className="w-4 h-4 mr-1" />Nova olimpíada</Button>
+      <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) reset(); }}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Cadastrar Olimpíada Global</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{editing ? "Editar Olimpíada" : "Cadastrar Olimpíada Global"}</DialogTitle></DialogHeader>
           <div className="flex flex-col gap-3">
             <Input placeholder="Nome" value={name} onChange={(e) => setName(e.target.value)} />
             <Textarea placeholder="Descrição" value={description} onChange={(e) => setDescription(e.target.value)} />
@@ -213,7 +232,7 @@ function OlympiadsTab() {
                 <SelectItem value="estadual_pi">Estadual — Piauí</SelectItem>
               </SelectContent>
             </Select>
-            <Button onClick={create}>Cadastrar</Button>
+            <Button onClick={submit}>{editing ? "Salvar alterações" : "Cadastrar"}</Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -231,6 +250,7 @@ function OlympiadsTab() {
                 <p className="text-xs text-muted-foreground">{new Date(c.date).toLocaleDateString("pt-BR")} · {c.location}</p>
               </div>
               <div className="flex items-center gap-1">
+                <Button size="sm" variant="outline" onClick={() => openEdit(c)}>Editar</Button>
                 <Button size="sm" variant="outline" onClick={() => toggleStatus(c.id, c.status)}>{c.status === "open" ? "Encerrar" : "Reabrir"}</Button>
                 <Button size="sm" variant="ghost" onClick={() => remove(c.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
               </div>
@@ -242,6 +262,7 @@ function OlympiadsTab() {
     </div>
   );
 }
+
 
 /* ---------- USERS ---------- */
 function UsersTab() {
@@ -416,7 +437,49 @@ function ReportsTab() {
       if (filter === "pending") q = q.eq("status", "pending");
       const { data, error } = await q;
       if (error) throw error;
-      return data;
+      const reports = data ?? [];
+
+      const postIds = reports.filter((r: any) => r.target_type === "post").map((r: any) => r.target_id);
+      const msgIds = reports.filter((r: any) => r.target_type === "message").map((r: any) => r.target_id);
+
+      const [postsRes, dmsRes, chatRes] = await Promise.all([
+        postIds.length
+          ? supabase.from("posts").select("id, content, profiles!posts_author_id_fkey(name, username)").in("id", postIds)
+          : Promise.resolve({ data: [] as any[] }),
+        msgIds.length
+          ? supabase.from("direct_messages").select("id, content, sender:profiles!direct_messages_sender_id_fkey(name, username)").in("id", msgIds)
+          : Promise.resolve({ data: [] as any[] }),
+        msgIds.length
+          ? supabase.from("chat_messages").select("id, content, profiles!chat_messages_sender_id_fkey(name, username)").in("id", msgIds)
+          : Promise.resolve({ data: [] as any[] }),
+      ]);
+
+      const postMap = new Map<string, any>((postsRes.data ?? []).map((p: any) => [p.id, p]));
+      const dmMap = new Map<string, any>((dmsRes.data ?? []).map((m: any) => [m.id, m]));
+      const chatMap = new Map<string, any>((chatRes.data ?? []).map((m: any) => [m.id, m]));
+
+      return reports.map((r: any) => {
+        let content: string | null = null;
+        let authorName: string | null = null;
+        let authorUsername: string | null = null;
+        if (r.target_type === "post") {
+          const p = postMap.get(r.target_id);
+          if (p) {
+            content = p.content;
+            authorName = p.profiles?.name ?? null;
+            authorUsername = p.profiles?.username ?? null;
+          }
+        } else {
+          const m = dmMap.get(r.target_id) || chatMap.get(r.target_id);
+          if (m) {
+            content = m.content;
+            const prof = m.sender ?? m.profiles;
+            authorName = prof?.name ?? null;
+            authorUsername = prof?.username ?? null;
+          }
+        }
+        return { ...r, _content: content, _authorName: authorName, _authorUsername: authorUsername };
+      });
     },
   });
 
@@ -430,9 +493,17 @@ function ReportsTab() {
 
   const deleteTarget = async (r: any) => {
     if (!confirm(`Excluir ${r.target_type === "post" ? "post" : "mensagem"} denunciado(a)?`)) return;
-    const table = r.target_type === "post" ? "posts" : "chat_messages";
-    const { error } = await supabase.from(table as any).delete().eq("id", r.target_id);
-    if (error) { toast.error(error.message); return; }
+    if (r.target_type === "post") {
+      const { error } = await supabase.from("posts").delete().eq("id", r.target_id);
+      if (error) { toast.error(error.message); return; }
+    } else {
+      // tenta DM, depois chat de clube
+      const { error: e1 } = await supabase.from("direct_messages").delete().eq("id", r.target_id);
+      if (e1) {
+        const { error: e2 } = await supabase.from("chat_messages").delete().eq("id", r.target_id);
+        if (e2) { toast.error(e2.message); return; }
+      }
+    }
     await resolve(r.id, "resolved");
   };
 
@@ -459,11 +530,22 @@ function ReportsTab() {
                   </div>
                   <span className="text-[10px] text-muted-foreground">{new Date(r.created_at).toLocaleString("pt-BR")}</span>
                 </div>
-                <p className="text-sm">{r.reason}</p>
-                <p className="text-[10px] text-muted-foreground font-mono">id: {r.target_id}</p>
+
+                <div className="rounded-md border bg-muted/30 p-2">
+                  <p className="text-[11px] text-muted-foreground mb-1">
+                    Autor: {r._authorName ? <span className="font-medium text-foreground">{r._authorName}</span> : <span className="italic">desconhecido</span>}
+                    {r._authorUsername && <span> · @{r._authorUsername}</span>}
+                  </p>
+                  <p className="text-sm whitespace-pre-wrap break-words">
+                    {r._content ?? <span className="italic text-muted-foreground">Conteúdo indisponível (já removido ou mensagem de chat ao vivo).</span>}
+                  </p>
+                </div>
+
+                <p className="text-xs"><span className="text-muted-foreground">Motivo:</span> {r.reason}</p>
+
                 {r.status === "pending" && (
                   <div className="flex gap-1 flex-wrap">
-                    <Button size="sm" variant="default" onClick={() => deleteTarget(r)}>Excluir conteúdo</Button>
+                    <Button size="sm" variant="default" onClick={() => deleteTarget(r)} disabled={!r._content}>Excluir conteúdo</Button>
                     <Button size="sm" variant="outline" onClick={() => resolve(r.id, "resolved")}>Resolver</Button>
                     <Button size="sm" variant="ghost" onClick={() => resolve(r.id, "ignored")}>Ignorar</Button>
                   </div>
@@ -477,6 +559,7 @@ function ReportsTab() {
     </div>
   );
 }
+
 
 /* ---------- ANNOUNCEMENTS ---------- */
 function AnnouncementsTab() {
@@ -532,23 +615,32 @@ function AnnouncementsTab() {
       <div>
         <h3 className="font-semibold text-sm mb-2">Anúncios anteriores</h3>
         <div className="space-y-2">
-          {(data ?? []).map((a: any) => (
-            <Card key={a.id}>
-              <CardContent className="p-3 flex justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="text-sm font-medium">{a.title}</p>
-                  <p className="text-xs text-muted-foreground">{a.message}</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">
-                    {new Date(a.created_at).toLocaleString("pt-BR")}
-                    {a.expires_at && ` · expira ${new Date(a.expires_at).toLocaleString("pt-BR")}`}
-                  </p>
-                </div>
-                <Button size="sm" variant="ghost" onClick={() => remove(a.id)}>
-                  <Trash2 className="w-4 h-4 text-destructive" />
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+          {(data ?? []).map((a: any) => {
+            const expired = !!a.expires_at && new Date(a.expires_at).getTime() < Date.now();
+            return (
+              <Card key={a.id}>
+                <CardContent className="p-3 flex justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-medium">{a.title}</p>
+                      <Badge variant={expired ? "secondary" : "default"} className="text-[10px]">
+                        {expired ? "Expirado" : "Ativo"}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{a.message}</p>
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      {new Date(a.created_at).toLocaleString("pt-BR")}
+                      {a.expires_at && ` · ${expired ? "expirou" : "expira"} ${new Date(a.expires_at).toLocaleString("pt-BR")}`}
+                    </p>
+                  </div>
+                  <Button size="sm" variant="ghost" onClick={() => remove(a.id)}>
+                    <Trash2 className="w-4 h-4 text-destructive" />
+                  </Button>
+                </CardContent>
+              </Card>
+            );
+          })}
+
           {!(data ?? []).length && <p className="text-sm text-muted-foreground text-center py-6">Nenhum anúncio.</p>}
         </div>
       </div>
