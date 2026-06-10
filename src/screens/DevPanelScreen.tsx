@@ -615,23 +615,32 @@ function AnnouncementsTab() {
       <div>
         <h3 className="font-semibold text-sm mb-2">Anúncios anteriores</h3>
         <div className="space-y-2">
-          {(data ?? []).map((a: any) => (
-            <Card key={a.id}>
-              <CardContent className="p-3 flex justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="text-sm font-medium">{a.title}</p>
-                  <p className="text-xs text-muted-foreground">{a.message}</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">
-                    {new Date(a.created_at).toLocaleString("pt-BR")}
-                    {a.expires_at && ` · expira ${new Date(a.expires_at).toLocaleString("pt-BR")}`}
-                  </p>
-                </div>
-                <Button size="sm" variant="ghost" onClick={() => remove(a.id)}>
-                  <Trash2 className="w-4 h-4 text-destructive" />
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+          {(data ?? []).map((a: any) => {
+            const expired = !!a.expires_at && new Date(a.expires_at).getTime() < Date.now();
+            return (
+              <Card key={a.id}>
+                <CardContent className="p-3 flex justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-medium">{a.title}</p>
+                      <Badge variant={expired ? "secondary" : "default"} className="text-[10px]">
+                        {expired ? "Expirado" : "Ativo"}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{a.message}</p>
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      {new Date(a.created_at).toLocaleString("pt-BR")}
+                      {a.expires_at && ` · ${expired ? "expirou" : "expira"} ${new Date(a.expires_at).toLocaleString("pt-BR")}`}
+                    </p>
+                  </div>
+                  <Button size="sm" variant="ghost" onClick={() => remove(a.id)}>
+                    <Trash2 className="w-4 h-4 text-destructive" />
+                  </Button>
+                </CardContent>
+              </Card>
+            );
+          })}
+
           {!(data ?? []).length && <p className="text-sm text-muted-foreground text-center py-6">Nenhum anúncio.</p>}
         </div>
       </div>
