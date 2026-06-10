@@ -16,6 +16,8 @@ import UserProfileScreen from "./screens/UserProfileScreen";
 import SettingsScreen from "./screens/SettingsScreen";
 import ChatListScreen from "./screens/ChatListScreen";
 import ChatRoomScreen from "./screens/ChatRoomScreen";
+import DirectMessagesScreen from "./screens/DirectMessagesScreen";
+import DirectChatScreen from "./screens/DirectChatScreen";
 import AuthScreen from "./screens/AuthScreen";
 import AdminScreen from "./screens/AdminScreen";
 import CompetitionsScreen from "./screens/CompetitionsScreen";
@@ -43,7 +45,7 @@ const ProtectedRoutes = () => {
   }
 
   const location = useLocation();
-  const hideBottomNav = location.pathname.startsWith('/chat/') || location.pathname === '/settings' || location.pathname === '/admin';
+  const hideBottomNav = location.pathname.startsWith('/chat/') || location.pathname.startsWith('/dm') || location.pathname === '/settings' || location.pathname === '/admin';
 
   return (
     <>
@@ -57,6 +59,8 @@ const ProtectedRoutes = () => {
         <Route path="/settings" element={<SettingsScreen />} />
         <Route path="/chat" element={<ChatListScreen />} />
         <Route path="/chat/:roomId" element={<ChatRoomScreen />} />
+        <Route path="/dm" element={<DirectMessagesScreen />} />
+        <Route path="/dm/:otherId" element={<DirectChatScreen />} />
         <Route path="/user/:id" element={<UserProfileScreen />} />
         <Route path="/club/:id" element={<ClubDetailScreen />} />
         <Route path="/admin" element={<AdminScreen />} />
