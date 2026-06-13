@@ -14,6 +14,7 @@ import SearchScreen from "./screens/SearchScreen";
 import ProfileScreen from "./screens/ProfileScreen";
 import UserProfileScreen from "./screens/UserProfileScreen";
 import SettingsScreen from "./screens/SettingsScreen";
+import AboutScreen from "./screens/AboutScreen";
 import ChatListScreen from "./screens/ChatListScreen";
 import ChatRoomScreen from "./screens/ChatRoomScreen";
 import DirectMessagesScreen from "./screens/DirectMessagesScreen";
