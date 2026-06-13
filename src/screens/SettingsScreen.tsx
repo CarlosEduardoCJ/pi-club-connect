@@ -67,7 +67,9 @@ const SettingsScreen = () => {
           <SettingsItem icon={Bell} label="Notificações" description="Gerenciar alertas e sons" />
           <SettingsItem icon={Shield} label="Privacidade" description="Controle quem vê seu perfil" />
           <SettingsItem icon={HelpCircle} label="Ajuda e Suporte" description="Central de ajuda e FAQ" />
-          <SettingsItem icon={Info} label="Sobre o App" description="Versão 1.0.0" last />
+          <Link to="/about" className="contents">
+            <SettingsItem icon={Info} label="Sobre o App" description="Versão 1.0.0" last />
+          </Link>
         </motion.section>
 
         {/* Admin Panel */}
