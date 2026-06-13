@@ -58,6 +58,7 @@ const ProtectedRoutes = () => {
         <Route path="/notifications" element={<NotificationsScreen />} />
         <Route path="/profile" element={<ProfileScreen />} />
         <Route path="/settings" element={<SettingsScreen />} />
+        <Route path="/about" element={<AboutScreen />} />
         <Route path="/chat" element={<ChatListScreen />} />
         <Route path="/chat/:roomId" element={<ChatRoomScreen />} />
         <Route path="/dm" element={<DirectMessagesScreen />} />
