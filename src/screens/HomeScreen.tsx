@@ -1,5 +1,7 @@
 import { useClubs } from '@/hooks/useSupabaseData';
+import { useSchoolView } from '@/hooks/useSchoolView';
 import ClubCard from '@/components/ClubCard';
+import DevSchoolSelector from '@/components/DevSchoolSelector';
 import { Search, Trophy, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -7,10 +9,11 @@ import { Link } from 'react-router-dom';
 const HomeScreen = () => {
   const [search, setSearch] = useState('');
   const { data: clubs, isLoading } = useClubs();
+  const { selectedSchool } = useSchoolView();
 
-  const filteredClubs = (clubs || []).filter(c =>
-    c.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredClubs = (clubs || [])
+    .filter(c => !selectedSchool || c.school === selectedSchool)
+    .filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -19,6 +22,8 @@ const HomeScreen = () => {
       </header>
 
       <main className="max-w-4xl mx-auto p-6">
+        <DevSchoolSelector />
+
         <div className="relative mb-6">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
@@ -48,6 +53,10 @@ const HomeScreen = () => {
 
         {isLoading ? (
           <div className="text-center text-muted-foreground py-12">Carregando clubes...</div>
+        ) : filteredClubs.length === 0 ? (
+          <div className="text-center text-muted-foreground py-12 text-sm">
+            Nenhum clube encontrado{selectedSchool ? ` em ${selectedSchool}` : ''}.
+          </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {filteredClubs.map((club, i) => (

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Plus, CalendarDays } from 'lucide-react';
 import { useEvents, useClubs } from '@/hooks/useSupabaseData';
 import { useAdmin } from '@/hooks/useAdmin';
+import { useSchoolView } from '@/hooks/useSchoolView';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -18,10 +19,18 @@ import {
 } from '@/components/ui/dialog';
 
 const EventsScreen = () => {
-  const { data: events, isLoading } = useEvents();
-  const { data: clubs } = useClubs();
+  const { data: eventsData, isLoading } = useEvents();
+  const { data: clubsData } = useClubs();
   const { isAdmin } = useAdmin();
+  const { selectedSchool } = useSchoolView();
   const queryClient = useQueryClient();
+
+  const events = selectedSchool
+    ? (eventsData || []).filter((e: any) => e.clubs?.school === selectedSchool)
+    : eventsData;
+  const clubs = selectedSchool
+    ? (clubsData || []).filter((c: any) => c.school === selectedSchool)
+    : clubsData;
 
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
