@@ -60,6 +60,24 @@ const AboutScreen = () => {
           </p>
         </motion.section>
 
+        <motion.section
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.2 }}
+          className="bg-card rounded-[var(--radius)] p-6 flex items-center justify-center"
+          style={{ boxShadow: 'var(--shadow-card)' }}
+        >
+          <a
+            href="https://www.instagram.com/_pi_club?igsh=NmVyOTFqem03Ymk1"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+          >
+            <InstagramIcon className="w-5 h-5" />
+            Siga-nos no Instagram
+          </a>
+        </motion.section>
+
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
