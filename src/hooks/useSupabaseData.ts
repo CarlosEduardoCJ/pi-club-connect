@@ -42,7 +42,7 @@ export const usePosts = (clubId?: string) =>
     queryFn: async () => {
       let query = supabase
         .from('posts')
-        .select('*, profiles!posts_author_id_fkey(name, username, avatar), clubs!posts_club_id_fkey(name)')
+        .select('*, profiles!posts_author_id_fkey(name, username, avatar), clubs!posts_club_id_fkey(name, school)')
         .order('created_at', { ascending: false });
       if (clubId) query = query.eq('club_id', clubId);
       const { data, error } = await query;
@@ -57,7 +57,7 @@ export const useEvents = () =>
     queryFn: async () => {
       const { data, error } = await supabase
         .from('events')
-        .select('*, clubs!events_club_id_fkey(name, icon)')
+        .select('*, clubs!events_club_id_fkey(name, icon, school)')
         .order('date');
       if (error) throw error;
       return data;

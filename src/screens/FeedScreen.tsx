@@ -1,10 +1,15 @@
 import { usePosts } from '@/hooks/useSupabaseData';
+import { useSchoolView } from '@/hooks/useSchoolView';
 import PostCard from '@/components/PostCard';
 import CreatePostDialog from '@/components/CreatePostDialog';
 import GlobalAnnouncementBanner from '@/components/GlobalAnnouncementBanner';
 
 const FeedScreen = () => {
-  const { data: posts, isLoading } = usePosts();
+  const { data: postsData, isLoading } = usePosts();
+  const { selectedSchool } = useSchoolView();
+  const posts = selectedSchool
+    ? (postsData || []).filter((p: any) => p.clubs?.school === selectedSchool)
+    : postsData;
 
   return (
     <div className="min-h-screen bg-background pb-20">

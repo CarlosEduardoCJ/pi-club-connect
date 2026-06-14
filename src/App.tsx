@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
+import { SchoolViewProvider } from "@/hooks/useSchoolView";
 import BottomNav from "./components/BottomNav";
 import HomeScreen from "./screens/HomeScreen";
 import ClubDetailScreen from "./screens/ClubDetailScreen";
@@ -107,7 +108,9 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <AuthProvider>
-            <AppRoutes />
+            <SchoolViewProvider>
+              <AppRoutes />
+            </SchoolViewProvider>
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
