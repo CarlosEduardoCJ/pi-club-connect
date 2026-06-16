@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Plus, CalendarDays } from 'lucide-react';
 import { useEvents, useClubs } from '@/hooks/useSupabaseData';
 import { useAdmin } from '@/hooks/useAdmin';
+import { useAuth } from '@/hooks/useAuth';
 import { useSchoolView } from '@/hooks/useSchoolView';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
@@ -9,6 +10,7 @@ import { toast } from 'sonner';
 import EventCard from '@/components/EventCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
   Dialog,
@@ -22,11 +24,12 @@ const EventsScreen = () => {
   const { data: eventsData, isLoading } = useEvents();
   const { data: clubsData } = useClubs();
   const { isAdmin } = useAdmin();
+  const { profile } = useAuth();
   const { selectedSchool } = useSchoolView();
   const queryClient = useQueryClient();
 
   const events = selectedSchool
-    ? (eventsData || []).filter((e: any) => e.clubs?.school === selectedSchool)
+    ? (eventsData || []).filter((e: any) => (e.school ?? e.clubs?.school) === selectedSchool)
     : eventsData;
   const clubs = selectedSchool
     ? (clubsData || []).filter((c: any) => c.school === selectedSchool)
@@ -39,22 +42,48 @@ const EventsScreen = () => {
   const [time, setTime] = useState('');
   const [location, setLocation] = useState('');
   const [clubId, setClubId] = useState('');
+  const [audience, setAudience] = useState<'club' | 'school' | 'classes'>('club');
+  const [targetClassesText, setTargetClassesText] = useState('');
   const [filterClub, setFilterClub] = useState<string>('all');
 
   const handleCreate = async () => {
-    if (!title.trim() || !clubId || !date || !time || !location) {
+    if (!title.trim() || !date || !time || !location) {
       toast.error('Preencha todos os campos');
       return;
     }
-    const { error } = await supabase.from('events').insert({
-      title, description, date, time, location, club_id: clubId,
-    });
+    if (audience === 'club' && !clubId) {
+      toast.error('Selecione um clube');
+      return;
+    }
+    const targetClasses =
+      audience === 'classes'
+        ? targetClassesText.split(',').map(s => s.trim()).filter(Boolean)
+        : null;
+    if (audience === 'classes' && (!targetClasses || targetClasses.length === 0)) {
+      toast.error('Informe ao menos uma turma');
+      return;
+    }
+
+    const payload: any = {
+      title,
+      description,
+      date,
+      time,
+      location,
+      audience,
+      club_id: audience === 'club' ? clubId : null,
+      target_classes: targetClasses,
+    };
+    const { error } = await supabase.from('events').insert(payload);
     if (error) { toast.error('Erro ao criar evento'); return; }
     toast.success('Evento criado!');
     setOpen(false);
-    setTitle(''); setDescription(''); setDate(''); setTime(''); setLocation(''); setClubId('');
+    setTitle(''); setDescription(''); setDate(''); setTime(''); setLocation('');
+    setClubId(''); setAudience('club'); setTargetClassesText('');
     queryClient.invalidateQueries({ queryKey: ['events'] });
   };
+
+  const userGrade = (profile as any)?.grade?.trim();
 
   const { upcoming, past } = useMemo(() => {
     const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -74,25 +103,48 @@ const EventsScreen = () => {
     list.length === 0 ? (
       <div className="text-center text-muted-foreground py-12 text-sm">Nenhum evento.</div>
     ) : (
-      list.map((event, i) => (
-        <EventCard
-          key={event.id}
-          event={{
-            id: event.id,
-            clubId: event.club_id,
-            clubName: event.clubs?.name || '',
-            clubIcon: event.clubs?.icon || 'Circle',
-            title: event.title,
-            description: event.description,
-            date: event.date,
-            time: event.time,
-            location: event.location,
-            attendeesCount: event.attendees_count || 0,
-            isAttending: false,
-          }}
-          index={i}
-        />
-      ))
+      list.map((event: any, i) => {
+        const audienceVal = (event.audience || 'club') as 'club' | 'school' | 'classes';
+        const targetClasses: string[] = event.target_classes || [];
+        const isForMe =
+          audienceVal === 'school' ||
+          audienceVal === 'club' ||
+          (audienceVal === 'classes' && userGrade && targetClasses.some(t => t.toLowerCase() === userGrade.toLowerCase()));
+
+        const clubName =
+          audienceVal === 'school'
+            ? 'Evento da escola'
+            : audienceVal === 'classes'
+              ? 'Evento para turmas'
+              : event.clubs?.name || '';
+        const clubIcon =
+          audienceVal === 'school' ? 'School'
+          : audienceVal === 'classes' ? 'Users'
+          : event.clubs?.icon || 'Circle';
+
+        return (
+          <div key={event.id} className={audienceVal === 'classes' && !isForMe ? 'opacity-60' : ''}>
+            <EventCard
+              event={{
+                id: event.id,
+                clubId: event.club_id || '',
+                clubName,
+                clubIcon,
+                title: event.title,
+                description: event.description,
+                date: event.date,
+                time: event.time,
+                location: event.location,
+                attendeesCount: event.attendees_count || 0,
+                isAttending: false,
+                audience: audienceVal,
+                targetClasses,
+              }}
+              index={i}
+            />
+          </div>
+        );
+      })
     );
 
   return (
@@ -107,15 +159,43 @@ const EventsScreen = () => {
                   <Plus className="w-4 h-4" /> Novo
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="max-h-[90vh] overflow-y-auto">
                 <DialogHeader><DialogTitle>Criar Evento</DialogTitle></DialogHeader>
                 <div className="flex flex-col gap-3">
                   <Input placeholder="Título" value={title} onChange={e => setTitle(e.target.value)} />
                   <Input placeholder="Descrição" value={description} onChange={e => setDescription(e.target.value)} />
-                  <select value={clubId} onChange={e => setClubId(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
-                    <option value="">Selecione um clube</option>
-                    {(clubs || []).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                  </select>
+
+                  <div className="flex flex-col gap-1.5">
+                    <Label>Público-alvo</Label>
+                    <select
+                      value={audience}
+                      onChange={e => setAudience(e.target.value as any)}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    >
+                      <option value="club">Clube específico</option>
+                      <option value="school">Toda a escola</option>
+                      <option value="classes">Turmas específicas</option>
+                    </select>
+                  </div>
+
+                  {audience === 'club' && (
+                    <select value={clubId} onChange={e => setClubId(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                      <option value="">Selecione um clube</option>
+                      {(clubs || []).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
+                  )}
+
+                  {audience === 'classes' && (
+                    <div className="flex flex-col gap-1.5">
+                      <Label>Turmas (separadas por vírgula)</Label>
+                      <Input
+                        placeholder="ex: 1º Ano A, 2º Ano B"
+                        value={targetClassesText}
+                        onChange={e => setTargetClassesText(e.target.value)}
+                      />
+                    </div>
+                  )}
+
                   <Input type="date" value={date} onChange={e => setDate(e.target.value)} />
                   <Input placeholder="Horário (ex: 14:00)" value={time} onChange={e => setTime(e.target.value)} />
                   <Input placeholder="Local" value={location} onChange={e => setLocation(e.target.value)} />
