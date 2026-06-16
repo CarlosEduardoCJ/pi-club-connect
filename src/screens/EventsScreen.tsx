@@ -25,8 +25,9 @@ const EventsScreen = () => {
   const { data: eventsData, isLoading } = useEvents();
   const { data: clubsData } = useClubs();
   const { isAdmin } = useAdmin();
-  const { profile } = useAuth();
-  const { selectedSchool } = useSchoolView();
+  const { profileId } = useAuth();
+  const { data: profile } = useProfile(profileId || '');
+
   const queryClient = useQueryClient();
 
   const events = selectedSchool
