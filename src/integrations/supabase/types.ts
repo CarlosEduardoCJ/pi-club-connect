@@ -310,34 +310,43 @@ export type Database = {
       events: {
         Row: {
           attendees_count: number | null
-          club_id: string
+          audience: string
+          club_id: string | null
           created_at: string
           date: string
           description: string
           id: string
           location: string
+          school: string | null
+          target_classes: string[] | null
           time: string
           title: string
         }
         Insert: {
           attendees_count?: number | null
-          club_id: string
+          audience?: string
+          club_id?: string | null
           created_at?: string
           date: string
           description: string
           id?: string
           location: string
+          school?: string | null
+          target_classes?: string[] | null
           time: string
           title: string
         }
         Update: {
           attendees_count?: number | null
-          club_id?: string
+          audience?: string
+          club_id?: string | null
           created_at?: string
           date?: string
           description?: string
           id?: string
           location?: string
+          school?: string | null
+          target_classes?: string[] | null
           time?: string
           title?: string
         }
