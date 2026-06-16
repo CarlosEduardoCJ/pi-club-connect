@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react';
 import { Plus, CalendarDays } from 'lucide-react';
-import { useEvents, useClubs } from '@/hooks/useSupabaseData';
+import { useEvents, useClubs, useProfile } from '@/hooks/useSupabaseData';
 import { useAdmin } from '@/hooks/useAdmin';
 import { useAuth } from '@/hooks/useAuth';
+
 import { useSchoolView } from '@/hooks/useSchoolView';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
