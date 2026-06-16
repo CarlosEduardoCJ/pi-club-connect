@@ -79,12 +79,22 @@ const EventCard = ({ event, index }: { event: ClubEvent; index: number }) => {
       <div className="h-1.5 bg-accent" />
 
       <div className="p-4">
-        {/* Club badge */}
-        <div className="flex items-center gap-2 mb-3">
+        {/* Club / audience badge */}
+        <div className="flex items-center gap-2 mb-3 flex-wrap">
           <div className="w-7 h-7 rounded-full bg-accent/10 flex items-center justify-center">
             <ClubIcon className="w-3.5 h-3.5 text-accent" />
           </div>
           <span className="text-xs font-semibold text-accent">{event.clubName}</span>
+          {event.audience === 'school' && (
+            <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+              Toda a escola
+            </span>
+          )}
+          {event.audience === 'classes' && event.targetClasses && event.targetClasses.length > 0 && (
+            <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-secondary/15 text-secondary">
+              Turmas: {event.targetClasses.join(', ')}
+            </span>
+          )}
         </div>
 
         <h3 className="text-base font-bold text-foreground mb-2">{event.title}</h3>
