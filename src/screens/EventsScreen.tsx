@@ -27,8 +27,9 @@ const EventsScreen = () => {
   const { isAdmin } = useAdmin();
   const { profileId } = useAuth();
   const { data: profile } = useProfile(profileId || '');
-
+  const { selectedSchool } = useSchoolView();
   const queryClient = useQueryClient();
+
 
   const events = selectedSchool
     ? (eventsData || []).filter((e: any) => (e.school ?? e.clubs?.school) === selectedSchool)
