@@ -32,6 +32,8 @@ export interface Post {
   createdAt: string; // ISO date
 }
 
+export type EventAudience = 'club' | 'school' | 'classes';
+
 export interface ClubEvent {
   id: string;
   clubId: string;
@@ -44,7 +46,10 @@ export interface ClubEvent {
   location: string;
   attendeesCount: number;
   isAttending: boolean;
+  audience?: EventAudience;
+  targetClasses?: string[];
 }
+
 
 export interface Notification {
   id: string;
