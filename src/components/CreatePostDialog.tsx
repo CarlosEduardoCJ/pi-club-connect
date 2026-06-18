@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { containsProfanity, PROFANITY_MESSAGE } from '@/lib/profanity';
 
 const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').slice(0, 2);
 
@@ -27,6 +28,10 @@ const CreatePostDialog = () => {
   const handleSubmit = async () => {
     if (!content.trim() || !clubId || !profileId) {
       toast.error('Preencha todos os campos');
+      return;
+    }
+    if (containsProfanity(content)) {
+      toast.error(PROFANITY_MESSAGE);
       return;
     }
     setLoading(true);
