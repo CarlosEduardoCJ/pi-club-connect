@@ -18,7 +18,11 @@ const HomeScreen = () => {
   return (
     <div className="min-h-screen bg-background pb-20">
       <header className="bg-primary text-primary-foreground py-4 px-6 sticky top-0 z-10">
-        <h1 className="text-xl font-extrabold text-center tracking-tight">PI_Club</h1>
+        <div className="max-w-4xl mx-auto flex items-center justify-between">
+          <span className="w-9" />
+          <h1 className="text-xl font-extrabold text-center tracking-tight">PI_Club</h1>
+          <NotificationsBell />
+        </div>
       </header>
 
       <main className="max-w-4xl mx-auto p-6">
