@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import NotificationsBell from '@/components/NotificationsBell';
 import { Search, UserPlus, UserCheck } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
@@ -100,7 +101,10 @@ const SearchScreen = () => {
     <div className="min-h-screen bg-background pb-20">
       <header className="bg-primary text-primary-foreground py-4 px-6 sticky top-0 z-10">
         <div className="max-w-lg mx-auto">
-          <h1 className="text-xl font-extrabold tracking-tight mb-3">Pesquisar</h1>
+          <div className="flex items-center justify-between mb-3">
+            <h1 className="text-xl font-extrabold tracking-tight">Pesquisar</h1>
+            <NotificationsBell />
+          </div>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary-foreground/50" />
             <input

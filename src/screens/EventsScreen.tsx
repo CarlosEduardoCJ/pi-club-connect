@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import NotificationsBell from '@/components/NotificationsBell';
 import { Plus, CalendarDays } from 'lucide-react';
 import { useEvents, useClubs, useProfile } from '@/hooks/useSupabaseData';
 import { useAdmin } from '@/hooks/useAdmin';
@@ -155,6 +156,7 @@ const EventsScreen = () => {
       <header className="bg-primary text-primary-foreground py-4 px-6 sticky top-0 z-10">
         <div className="max-w-lg mx-auto flex items-center justify-between gap-3">
           <h1 className="text-xl font-extrabold tracking-tight">Eventos</h1>
+          <div className="flex items-center gap-1">
           {isAdmin && (
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
@@ -207,6 +209,8 @@ const EventsScreen = () => {
               </DialogContent>
             </Dialog>
           )}
+            <NotificationsBell />
+          </div>
         </div>
       </header>
 

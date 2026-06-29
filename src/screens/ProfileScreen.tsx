@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import NotificationsBell from '@/components/NotificationsBell';
 import { useProfile, useProfileClubs, usePosts } from '@/hooks/useSupabaseData';
 import { useAuth } from '@/hooks/useAuth';
 import PostCard from '@/components/PostCard';
@@ -37,12 +38,15 @@ const ProfileScreen = () => {
       <header className="bg-primary text-primary-foreground py-4 px-6 sticky top-0 z-10">
         <div className="max-w-lg mx-auto flex items-center justify-between">
           <h1 className="text-xl font-extrabold tracking-tight">Perfil</h1>
-          <Link
-            to="/settings"
-            className="w-9 h-9 rounded-full bg-primary-foreground/10 flex items-center justify-center hover:bg-primary-foreground/20 transition-colors"
-          >
-            <Settings className="w-4 h-4" />
-          </Link>
+          <div className="flex items-center gap-1">
+            <NotificationsBell />
+            <Link
+              to="/settings"
+              className="w-9 h-9 rounded-full bg-primary-foreground/10 flex items-center justify-center hover:bg-primary-foreground/20 transition-colors"
+            >
+              <Settings className="w-4 h-4" />
+            </Link>
+          </div>
         </div>
       </header>
 

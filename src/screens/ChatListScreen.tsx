@@ -1,4 +1,5 @@
 import { useChatRooms } from '@/hooks/useSupabaseData';
+import NotificationsBell from '@/components/NotificationsBell';
 import { Link } from 'react-router-dom';
 import * as Icons from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -23,11 +24,14 @@ const ChatListScreen = () => {
   return (
     <div className="min-h-screen bg-background pb-20">
       <header className="bg-primary text-primary-foreground py-4 px-6 sticky top-0 z-10">
-        <div className="max-w-lg mx-auto flex items-center justify-between">
+        <div className="max-w-lg mx-auto flex items-center justify-between gap-2">
           <h1 className="text-xl font-extrabold tracking-tight">Mensagens</h1>
-          <Link to="/dm" className="w-9 h-9 rounded-full bg-primary-foreground/10 flex items-center justify-center hover:bg-primary-foreground/20 transition-colors" aria-label="Nova conversa">
-            <MessageCirclePlus className="w-4 h-4" />
-          </Link>
+          <div className="flex items-center gap-1">
+            <Link to="/dm" className="w-9 h-9 rounded-full bg-primary-foreground/10 flex items-center justify-center hover:bg-primary-foreground/20 transition-colors" aria-label="Nova conversa">
+              <MessageCirclePlus className="w-4 h-4" />
+            </Link>
+            <NotificationsBell />
+          </div>
         </div>
       </header>
 

@@ -1,4 +1,5 @@
 import { usePosts } from '@/hooks/useSupabaseData';
+import NotificationsBell from '@/components/NotificationsBell';
 import { useSchoolView } from '@/hooks/useSchoolView';
 import PostCard from '@/components/PostCard';
 import CreatePostDialog from '@/components/CreatePostDialog';
@@ -14,8 +15,9 @@ const FeedScreen = () => {
   return (
     <div className="min-h-screen bg-background pb-20">
       <header className="bg-primary text-primary-foreground py-4 px-6 sticky top-0 z-10">
-        <div className="max-w-lg mx-auto">
+        <div className="max-w-lg mx-auto flex items-center justify-between">
           <h1 className="text-xl font-extrabold tracking-tight">Feed</h1>
+          <NotificationsBell />
         </div>
       </header>
 
