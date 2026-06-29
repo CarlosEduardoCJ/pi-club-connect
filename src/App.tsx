@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { SchoolViewProvider } from "@/hooks/useSchoolView";
+import { UnreadCountsProvider } from "@/hooks/useUnreadCounts";
 import BottomNav from "./components/BottomNav";
 import HomeScreen from "./screens/HomeScreen";
 import ClubDetailScreen from "./screens/ClubDetailScreen";
@@ -109,7 +110,9 @@ const App = () => (
         <BrowserRouter>
           <AuthProvider>
             <SchoolViewProvider>
-              <AppRoutes />
+              <UnreadCountsProvider>
+                <AppRoutes />
+              </UnreadCountsProvider>
             </SchoolViewProvider>
           </AuthProvider>
         </BrowserRouter>
