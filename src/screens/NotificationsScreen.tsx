@@ -1,4 +1,5 @@
-import { useNotifications, DEMO_PROFILE_ID } from '@/hooks/useSupabaseData';
+import { useNotifications } from '@/hooks/useSupabaseData';
+import { useAuth } from '@/hooks/useAuth';
 import { Heart, MessageCircle, CalendarDays, UserPlus, AtSign } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -29,7 +30,8 @@ const timeAgo = (dateStr: string) => {
 };
 
 const NotificationsScreen = () => {
-  const { data: notifications, isLoading } = useNotifications(DEMO_PROFILE_ID);
+  const { profileId } = useAuth();
+  const { data: notifications, isLoading } = useNotifications(profileId || '');
   const unreadCount = (notifications || []).filter(n => !n.is_read).length;
 
   return (
