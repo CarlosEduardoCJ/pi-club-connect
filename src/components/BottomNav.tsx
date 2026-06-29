@@ -6,7 +6,7 @@ const tabs = [
   { path: '/', icon: Home, label: 'Início' },
   { path: '/feed', icon: Newspaper, label: 'Feed' },
   { path: '/search', icon: Search, label: 'Buscar' },
-  { path: '/dm', icon: MessageCircle, label: 'Chat' },
+  { path: '/chat', icon: MessageCircle, label: 'Chat' },
   { path: '/events', icon: CalendarDays, label: 'Eventos' },
   { path: '/profile', icon: User, label: 'Perfil' },
 ];
@@ -20,10 +20,10 @@ const BottomNav = () => {
       <div className="max-w-lg mx-auto flex items-center justify-around py-2">
         {tabs.map((tab) => {
           const isActive =
-            tab.path === '/dm'
-              ? location.pathname.startsWith('/dm') || location.pathname.startsWith('/chat')
+            tab.path === '/chat'
+              ? location.pathname.startsWith('/chat') || location.pathname.startsWith('/dm')
               : location.pathname === tab.path;
-          const showBadge = tab.path === '/dm' && dmsTotal > 0;
+          const showBadge = tab.path === '/chat' && dmsTotal > 0;
           return (
             <Link
               key={tab.path}
