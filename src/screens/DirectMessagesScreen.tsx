@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { ArrowLeft, Search, MessageCircle } from "lucide-react";
 import TeacherBadge from "@/components/TeacherBadge";
+import { useUnreadCounts } from "@/hooks/useUnreadCounts";
 import { motion } from "framer-motion";
 
 interface SchoolProfile {
@@ -18,6 +19,7 @@ const getInitials = (n: string) => n.split(" ").map((p) => p[0]).join("").slice(
 
 export default function DirectMessagesScreen() {
   const { profileId } = useAuth();
+  const { dmsBySender } = useUnreadCounts();
   const navigate = useNavigate();
   const [mySchool, setMySchool] = useState<string | null>(null);
   const [users, setUsers] = useState<SchoolProfile[]>([]);
@@ -116,7 +118,13 @@ export default function DirectMessagesScreen() {
                   </div>
                   <p className="text-xs text-muted-foreground truncate">@{u.username}</p>
                 </div>
-                <MessageCircle className="w-4 h-4 text-muted-foreground shrink-0" />
+                {dmsBySender[u.id] ? (
+                  <span className="min-w-[20px] h-[20px] px-1.5 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center shrink-0">
+                    {dmsBySender[u.id] > 99 ? '99+' : dmsBySender[u.id]}
+                  </span>
+                ) : (
+                  <MessageCircle className="w-4 h-4 text-muted-foreground shrink-0" />
+                )}
               </motion.button>
             ))}
           </div>
