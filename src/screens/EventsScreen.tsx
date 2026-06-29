@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import NotificationsBell from '@/components/NotificationsBell';
 import { Plus, CalendarDays } from 'lucide-react';
 import { useEvents, useClubs, useProfile } from '@/hooks/useSupabaseData';
 import { useAdmin } from '@/hooks/useAdmin';

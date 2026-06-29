@@ -1,4 +1,5 @@
 import { usePosts } from '@/hooks/useSupabaseData';
+import NotificationsBell from '@/components/NotificationsBell';
 import { useSchoolView } from '@/hooks/useSchoolView';
 import PostCard from '@/components/PostCard';
 import CreatePostDialog from '@/components/CreatePostDialog';

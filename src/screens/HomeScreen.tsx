@@ -1,4 +1,5 @@
 import { useClubs } from '@/hooks/useSupabaseData';
+import NotificationsBell from '@/components/NotificationsBell';
 import { useSchoolView } from '@/hooks/useSchoolView';
 import ClubCard from '@/components/ClubCard';
 import DevSchoolSelector from '@/components/DevSchoolSelector';

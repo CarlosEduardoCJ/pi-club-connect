@@ -1,4 +1,5 @@
 import { useChatRooms } from '@/hooks/useSupabaseData';
+import NotificationsBell from '@/components/NotificationsBell';
 import { Link } from 'react-router-dom';
 import * as Icons from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
