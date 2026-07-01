@@ -41,7 +41,7 @@ const FeedScreen = () => {
                 authorName: post.profiles?.name || '',
                 authorUsername: post.profiles?.username || '',
                 authorAvatar: post.profiles?.avatar || '',
-                clubName: post.clubs?.name || '',
+                clubName: post.clubs?.name || 'Feed Geral',
                 content: post.content,
                 imageUrl: post.image_url || undefined,
                 likesCount: post.likes_count || 0,
