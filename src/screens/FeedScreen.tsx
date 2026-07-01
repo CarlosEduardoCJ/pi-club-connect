@@ -9,7 +9,7 @@ const FeedScreen = () => {
   const { data: postsData, isLoading } = usePosts();
   const { selectedSchool } = useSchoolView();
   const posts = selectedSchool
-    ? (postsData || []).filter((p: any) => p.clubs?.school === selectedSchool)
+    ? (postsData || []).filter((p: any) => (p.school || p.clubs?.school) === selectedSchool)
     : postsData;
 
   return (
