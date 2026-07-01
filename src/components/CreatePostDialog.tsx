@@ -106,12 +106,7 @@ const CreatePostDialog = () => {
               className="border-none bg-transparent resize-none text-base focus-visible:ring-0 focus-visible:ring-offset-0 px-0"
               autoFocus
             />
-            <div className="flex items-center justify-between pt-2 border-t border-border">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <button className="p-2 rounded-full hover:bg-muted transition-colors" type="button">
-                  <Image className="w-5 h-5" />
-                </button>
-              </div>
+            <div className="flex items-center justify-end pt-2 border-t border-border">
               <Button
                 onClick={handleSubmit}
                 disabled={loading || !content.trim() || !clubId}
