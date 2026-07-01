@@ -542,33 +542,36 @@ export type Database = {
       posts: {
         Row: {
           author_id: string
-          club_id: string
+          club_id: string | null
           comments_count: number | null
           content: string
           created_at: string
           id: string
           image_url: string | null
           likes_count: number | null
+          school: string | null
         }
         Insert: {
           author_id: string
-          club_id: string
+          club_id?: string | null
           comments_count?: number | null
           content: string
           created_at?: string
           id?: string
           image_url?: string | null
           likes_count?: number | null
+          school?: string | null
         }
         Update: {
           author_id?: string
-          club_id?: string
+          club_id?: string | null
           comments_count?: number | null
           content?: string
           created_at?: string
           id?: string
           image_url?: string | null
           likes_count?: number | null
+          school?: string | null
         }
         Relationships: [
           {
