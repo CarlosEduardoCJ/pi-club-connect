@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Image, Send } from 'lucide-react';
+import { Send } from 'lucide-react';
 import { useProfileClubs, useProfile } from '@/hooks/useSupabaseData';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -37,7 +37,7 @@ const CreatePostDialog = () => {
     setLoading(true);
     const { error } = await supabase.from('posts').insert({
       content: content.trim(),
-      club_id: clubId,
+      club_id: clubId === '__all__' ? null : clubId,
       author_id: profileId,
     });
     setLoading(false);
@@ -90,6 +90,7 @@ const CreatePostDialog = () => {
                     <SelectValue placeholder="Publicar em qual clube?" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="__all__">Todos (Feed Geral)</SelectItem>
                     {clubs.map((club: any) => (
                       <SelectItem key={club.id} value={club.id}>{club.name}</SelectItem>
                     ))}
@@ -105,12 +106,7 @@ const CreatePostDialog = () => {
               className="border-none bg-transparent resize-none text-base focus-visible:ring-0 focus-visible:ring-offset-0 px-0"
               autoFocus
             />
-            <div className="flex items-center justify-between pt-2 border-t border-border">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <button className="p-2 rounded-full hover:bg-muted transition-colors" type="button">
-                  <Image className="w-5 h-5" />
-                </button>
-              </div>
+            <div className="flex items-center justify-end pt-2 border-t border-border">
               <Button
                 onClick={handleSubmit}
                 disabled={loading || !content.trim() || !clubId}

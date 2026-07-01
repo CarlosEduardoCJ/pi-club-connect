@@ -9,7 +9,7 @@ const FeedScreen = () => {
   const { data: postsData, isLoading } = usePosts();
   const { selectedSchool } = useSchoolView();
   const posts = selectedSchool
-    ? (postsData || []).filter((p: any) => p.clubs?.school === selectedSchool)
+    ? (postsData || []).filter((p: any) => (p.school || p.clubs?.school) === selectedSchool)
     : postsData;
 
   return (
@@ -41,7 +41,7 @@ const FeedScreen = () => {
                 authorName: post.profiles?.name || '',
                 authorUsername: post.profiles?.username || '',
                 authorAvatar: post.profiles?.avatar || '',
-                clubName: post.clubs?.name || '',
+                clubName: post.clubs?.name || 'Feed Geral',
                 content: post.content,
                 imageUrl: post.image_url || undefined,
                 likesCount: post.likes_count || 0,
