@@ -37,7 +37,7 @@ const CreatePostDialog = () => {
     setLoading(true);
     const { error } = await supabase.from('posts').insert({
       content: content.trim(),
-      club_id: clubId,
+      club_id: clubId === '__all__' ? null : clubId,
       author_id: profileId,
     });
     setLoading(false);
