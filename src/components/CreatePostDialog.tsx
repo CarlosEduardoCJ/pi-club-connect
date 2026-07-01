@@ -90,6 +90,7 @@ const CreatePostDialog = () => {
                     <SelectValue placeholder="Publicar em qual clube?" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="__all__">Todos (Feed Geral)</SelectItem>
                     {clubs.map((club: any) => (
                       <SelectItem key={club.id} value={club.id}>{club.name}</SelectItem>
                     ))}
