@@ -43,6 +43,7 @@ const UserProfileScreen = () => {
   const [loading, setLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
   const [toggling, setToggling] = useState(false);
+  const [followDialog, setFollowDialog] = useState<null | 'followers' | 'following'>(null);
   const { data: allPosts } = usePosts();
 
   const userPosts = (allPosts || []).filter(p => p.author_id === id);
