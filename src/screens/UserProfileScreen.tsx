@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { usePosts } from '@/hooks/useSupabaseData';
 import PostCard from '@/components/PostCard';
 import ProfileAvatar from '@/components/ProfileAvatar';
+import FollowListDialog from '@/components/FollowListDialog';
 import TeacherBadge from '@/components/TeacherBadge';
 import { ArrowLeft, UserPlus, UserCheck } from 'lucide-react';
 import * as Icons from 'lucide-react';
@@ -42,6 +43,7 @@ const UserProfileScreen = () => {
   const [loading, setLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
   const [toggling, setToggling] = useState(false);
+  const [followDialog, setFollowDialog] = useState<null | 'followers' | 'following'>(null);
   const { data: allPosts } = usePosts();
 
   const userPosts = (allPosts || []).filter(p => p.author_id === id);
@@ -160,14 +162,14 @@ const UserProfileScreen = () => {
               <p className="text-lg font-extrabold text-foreground">{user.posts_count || 0}</p>
               <p className="text-xs text-muted-foreground">Posts</p>
             </div>
-            <div className="text-center">
+            <button onClick={() => setFollowDialog('followers')} className="text-center hover:opacity-80 transition-opacity">
               <p className="text-lg font-extrabold text-foreground">{user.followers_count || 0}</p>
               <p className="text-xs text-muted-foreground">Seguidores</p>
-            </div>
-            <div className="text-center">
+            </button>
+            <button onClick={() => setFollowDialog('following')} className="text-center hover:opacity-80 transition-opacity">
               <p className="text-lg font-extrabold text-foreground">{user.following_count || 0}</p>
               <p className="text-xs text-muted-foreground">Seguindo</p>
-            </div>
+            </button>
           </div>
 
           {clubs.length > 0 && (
@@ -216,6 +218,12 @@ const UserProfileScreen = () => {
           )}
         </div>
       </main>
+      <FollowListDialog
+        open={followDialog !== null}
+        onOpenChange={(o) => !o && setFollowDialog(null)}
+        profileId={id || ''}
+        mode={followDialog || 'followers'}
+      />
     </div>
   );
 };

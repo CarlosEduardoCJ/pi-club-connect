@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import PostCard from '@/components/PostCard';
 import EditProfileDialog from '@/components/EditProfileDialog';
 import ProfileAvatar from '@/components/ProfileAvatar';
+import FollowListDialog from '@/components/FollowListDialog';
 import { Settings, Edit3 } from 'lucide-react';
 import TeacherBadge from '@/components/TeacherBadge';
 import AchievementsBadges from '@/components/AchievementsBadges';
@@ -18,6 +19,7 @@ const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').sl
 const ProfileScreen = () => {
   const { profileId } = useAuth();
   const [editOpen, setEditOpen] = useState(false);
+  const [followDialog, setFollowDialog] = useState<null | 'followers' | 'following'>(null);
   const { data: user, isLoading: loadingUser } = useProfile(profileId || '');
   const { data: memberships } = useProfileClubs(profileId || '');
   const { data: allPosts } = usePosts();
@@ -86,14 +88,14 @@ const ProfileScreen = () => {
               <p className="text-lg font-extrabold text-foreground">{user.posts_count}</p>
               <p className="text-xs text-muted-foreground">Posts</p>
             </div>
-            <div className="text-center">
+            <button onClick={() => setFollowDialog('followers')} className="text-center hover:opacity-80 transition-opacity">
               <p className="text-lg font-extrabold text-foreground">{user.followers_count}</p>
               <p className="text-xs text-muted-foreground">Seguidores</p>
-            </div>
-            <div className="text-center">
+            </button>
+            <button onClick={() => setFollowDialog('following')} className="text-center hover:opacity-80 transition-opacity">
               <p className="text-lg font-extrabold text-foreground">{user.following_count}</p>
               <p className="text-xs text-muted-foreground">Seguindo</p>
-            </div>
+            </button>
           </div>
 
           <div className="mt-4">
@@ -155,6 +157,12 @@ const ProfileScreen = () => {
         open={editOpen}
         onOpenChange={setEditOpen}
         profile={{ id: user.id, name: user.name, username: user.username, bio: user.bio || '', grade: user.grade || '', avatar: user.avatar || '' }}
+      />
+      <FollowListDialog
+        open={followDialog !== null}
+        onOpenChange={(o) => !o && setFollowDialog(null)}
+        profileId={profileId || ''}
+        mode={followDialog || 'followers'}
       />
     </div>
   );
