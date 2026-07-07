@@ -427,6 +427,7 @@ export type Database = {
         Row: {
           created_at: string
           from_avatar: string | null
+          from_profile_id: string | null
           from_user: string
           id: string
           is_read: boolean | null
@@ -437,6 +438,7 @@ export type Database = {
         Insert: {
           created_at?: string
           from_avatar?: string | null
+          from_profile_id?: string | null
           from_user: string
           id?: string
           is_read?: boolean | null
@@ -447,6 +449,7 @@ export type Database = {
         Update: {
           created_at?: string
           from_avatar?: string | null
+          from_profile_id?: string | null
           from_user?: string
           id?: string
           is_read?: boolean | null
