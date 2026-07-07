@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import PostCard from '@/components/PostCard';
 import EditProfileDialog from '@/components/EditProfileDialog';
 import ProfileAvatar from '@/components/ProfileAvatar';
+import FollowListDialog from '@/components/FollowListDialog';
 import { Settings, Edit3 } from 'lucide-react';
 import TeacherBadge from '@/components/TeacherBadge';
 import AchievementsBadges from '@/components/AchievementsBadges';
