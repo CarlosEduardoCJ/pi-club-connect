@@ -88,14 +88,14 @@ const ProfileScreen = () => {
               <p className="text-lg font-extrabold text-foreground">{user.posts_count}</p>
               <p className="text-xs text-muted-foreground">Posts</p>
             </div>
-            <div className="text-center">
+            <button onClick={() => setFollowDialog('followers')} className="text-center hover:opacity-80 transition-opacity">
               <p className="text-lg font-extrabold text-foreground">{user.followers_count}</p>
               <p className="text-xs text-muted-foreground">Seguidores</p>
-            </div>
-            <div className="text-center">
+            </button>
+            <button onClick={() => setFollowDialog('following')} className="text-center hover:opacity-80 transition-opacity">
               <p className="text-lg font-extrabold text-foreground">{user.following_count}</p>
               <p className="text-xs text-muted-foreground">Seguindo</p>
-            </div>
+            </button>
           </div>
 
           <div className="mt-4">
