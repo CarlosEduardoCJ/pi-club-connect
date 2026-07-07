@@ -19,6 +19,7 @@ const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').sl
 const ProfileScreen = () => {
   const { profileId } = useAuth();
   const [editOpen, setEditOpen] = useState(false);
+  const [followDialog, setFollowDialog] = useState<null | 'followers' | 'following'>(null);
   const { data: user, isLoading: loadingUser } = useProfile(profileId || '');
   const { data: memberships } = useProfileClubs(profileId || '');
   const { data: allPosts } = usePosts();
