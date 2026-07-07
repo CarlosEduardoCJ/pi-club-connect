@@ -158,6 +158,12 @@ const ProfileScreen = () => {
         onOpenChange={setEditOpen}
         profile={{ id: user.id, name: user.name, username: user.username, bio: user.bio || '', grade: user.grade || '', avatar: user.avatar || '' }}
       />
+      <FollowListDialog
+        open={followDialog !== null}
+        onOpenChange={(o) => !o && setFollowDialog(null)}
+        profileId={profileId || ''}
+        mode={followDialog || 'followers'}
+      />
     </div>
   );
 };
