@@ -1,14 +1,20 @@
 import { useNotifications } from '@/hooks/useSupabaseData';
 import { useAuth } from '@/hooks/useAuth';
-import { Heart, MessageCircle, CalendarDays, UserPlus, AtSign } from 'lucide-react';
+import { Heart, MessageCircle, CalendarDays, UserPlus, AtSign, Trophy, Megaphone, Flag } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 const iconMap: Record<string, typeof Heart> = {
   like: Heart,
   comment: MessageCircle,
   event: CalendarDays,
   join: UserPlus,
+  follow: UserPlus,
   mention: AtSign,
+  message: MessageCircle,
+  competition: Trophy,
+  announcement: Megaphone,
+  report: Flag,
 };
 
 const colorMap: Record<string, string> = {
@@ -16,7 +22,12 @@ const colorMap: Record<string, string> = {
   comment: 'text-primary bg-primary/10',
   event: 'text-secondary bg-secondary/10',
   join: 'text-secondary bg-secondary/10',
+  follow: 'text-secondary bg-secondary/10',
   mention: 'text-accent bg-accent/10',
+  message: 'text-primary bg-primary/10',
+  competition: 'text-accent bg-accent/10',
+  announcement: 'text-primary bg-primary/10',
+  report: 'text-destructive bg-destructive/10',
 };
 
 const timeAgo = (dateStr: string) => {
