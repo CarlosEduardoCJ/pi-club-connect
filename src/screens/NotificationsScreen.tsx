@@ -80,7 +80,16 @@ const NotificationsScreen = () => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-foreground">
-                    <span className="font-bold">{notif.from_user}</span>{' '}
+                    {(notif as { from_profile_id?: string | null }).from_profile_id ? (
+                      <Link
+                        to={`/user/${(notif as { from_profile_id: string }).from_profile_id}`}
+                        className="font-bold hover:underline"
+                      >
+                        {notif.from_user}
+                      </Link>
+                    ) : (
+                      <span className="font-bold">{notif.from_user}</span>
+                    )}{' '}
                     <span className="text-muted-foreground">{notif.message}</span>
                   </p>
                   <span className="text-xs text-muted-foreground mt-0.5">{timeAgo(notif.created_at)}</span>
