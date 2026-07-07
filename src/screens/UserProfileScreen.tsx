@@ -218,6 +218,12 @@ const UserProfileScreen = () => {
           )}
         </div>
       </main>
+      <FollowListDialog
+        open={followDialog !== null}
+        onOpenChange={(o) => !o && setFollowDialog(null)}
+        profileId={id || ''}
+        mode={followDialog || 'followers'}
+      />
     </div>
   );
 };
