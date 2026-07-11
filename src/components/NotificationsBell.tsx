@@ -143,7 +143,8 @@ export default function NotificationsBell({ tone = 'on-primary' }: { tone?: 'on-
               return (
                 <li
                   key={n.id}
-                  className="flex items-start gap-3 px-4 py-3 border-b border-border/60 last:border-b-0"
+                  onClick={() => handleClick(n)}
+                  className="flex items-start gap-3 px-4 py-3 border-b border-border/60 last:border-b-0 cursor-pointer hover:bg-muted/50 transition-colors"
                 >
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${cls}`}>
                     <Icon className="w-4 h-4" />
