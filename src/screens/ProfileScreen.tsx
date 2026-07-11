@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import NotificationsBell from '@/components/NotificationsBell';
-import { useProfile, useProfileClubs, usePosts } from '@/hooks/useSupabaseData';
+import { useProfile, useProfileClubs, useUserPosts } from '@/hooks/useSupabaseData';
 import { useAuth } from '@/hooks/useAuth';
 import PostCard from '@/components/PostCard';
 import EditProfileDialog from '@/components/EditProfileDialog';
@@ -22,10 +22,10 @@ const ProfileScreen = () => {
   const [followDialog, setFollowDialog] = useState<null | 'followers' | 'following'>(null);
   const { data: user, isLoading: loadingUser } = useProfile(profileId || '');
   const { data: memberships } = useProfileClubs(profileId || '');
-  const { data: allPosts } = usePosts();
+  const { data: userPostsData } = useUserPosts(profileId || undefined);
 
   const userClubs = (memberships || []).map(m => m.clubs).filter(Boolean);
-  const userPosts = (allPosts || []).filter(p => p.author_id === profileId);
+  const userPosts = userPostsData || [];
 
   if (loadingUser || !user) {
     return (
@@ -85,7 +85,7 @@ const ProfileScreen = () => {
 
           <div className="flex items-center justify-around py-3 border-t border-b border-border">
             <div className="text-center">
-              <p className="text-lg font-extrabold text-foreground">{user.posts_count}</p>
+              <p className="text-lg font-extrabold text-foreground">{userPosts.length}</p>
               <p className="text-xs text-muted-foreground">Posts</p>
             </div>
             <button onClick={() => setFollowDialog('followers')} className="text-center hover:opacity-80 transition-opacity">
@@ -119,7 +119,7 @@ const ProfileScreen = () => {
           </div>
 
           <AchievementsBadges
-            postsCount={user.posts_count || 0}
+            postsCount={userPosts.length}
             followersCount={user.followers_count || 0}
             createdAt={user.created_at}
           />

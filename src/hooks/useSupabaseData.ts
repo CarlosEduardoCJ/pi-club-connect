@@ -51,6 +51,21 @@ export const usePosts = (clubId?: string) =>
     },
   });
 
+export const useUserPosts = (profileId: string | undefined) =>
+  useQuery({
+    queryKey: ['user-posts', profileId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('posts')
+        .select('*, profiles!posts_author_id_fkey(name, username, avatar), clubs!posts_club_id_fkey(name, school)')
+        .eq('author_id', profileId!)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!profileId,
+  });
+
 export const useEvents = () =>
   useQuery({
     queryKey: ['events'],
