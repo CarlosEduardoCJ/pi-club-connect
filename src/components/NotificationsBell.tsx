@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Bell, Heart, UserPlus, MessageCircle, Trophy, CalendarDays } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -12,6 +13,7 @@ interface Notif {
   message: string;
   from_user: string;
   from_avatar: string | null;
+  from_profile_id: string | null;
   is_read: boolean | null;
   created_at: string;
 }
