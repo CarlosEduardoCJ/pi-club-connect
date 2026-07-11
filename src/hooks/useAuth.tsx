@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     // Safety timeout to prevent infinite loading
-    const timeout = setTimeout(() => setLoading(false), 5000);
+    const timeout = setTimeout(() => setLoading(false), 10000);
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
