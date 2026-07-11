@@ -119,7 +119,7 @@ const ProfileScreen = () => {
           </div>
 
           <AchievementsBadges
-            postsCount={user.posts_count || 0}
+            postsCount={userPosts.length}
             followersCount={user.followers_count || 0}
             createdAt={user.created_at}
           />
