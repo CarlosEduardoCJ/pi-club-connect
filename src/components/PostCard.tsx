@@ -22,7 +22,7 @@ interface PostDisplay {
   imageUrl?: string;
   likesCount: number;
   commentsCount: number;
-  isLiked: boolean;
+  isLiked?: boolean;
   createdAt: string;
 }
 
