@@ -54,9 +54,33 @@ const timeAgo = (iso: string) => {
 export default function NotificationsBell({ tone = 'on-primary' }: { tone?: 'on-primary' | 'on-surface' }) {
   const { profileId } = useAuth();
   const { notifications, markNotificationsRead } = useUnreadCounts();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<Notif[]>([]);
   const [loading, setLoading] = useState(false);
+
+  const handleClick = (n: Notif) => {
+    setOpen(false);
+    switch (n.type) {
+      case 'follow':
+        if (n.from_profile_id) navigate(`/user/${n.from_profile_id}`);
+        break;
+      case 'message':
+        navigate('/chat');
+        break;
+      case 'competition':
+        navigate('/competitions');
+        break;
+      case 'event':
+        navigate('/events');
+        break;
+      case 'like':
+      case 'post':
+      default:
+        navigate('/');
+        break;
+    }
+  };
 
   useEffect(() => {
     if (!open || !profileId) return;
