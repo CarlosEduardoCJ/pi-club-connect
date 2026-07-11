@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { ShieldCheck } from "lucide-react";
 
 const DEFAULT_DEV_SCHOOL = "CETI MANOEL RICARDO";
-const DEV_SETUP_MASTER_PASSWORD = "PI_CLUB_DEV_2026";
+const DEV_SETUP_MASTER_PASSWORD = import.meta.env.VITE_DEV_MASTER_PASSWORD;
 const authSetupClient = createClient(
   import.meta.env.VITE_SUPABASE_URL,
   import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
