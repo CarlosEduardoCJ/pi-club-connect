@@ -142,14 +142,10 @@ const PostCard = ({ post, index }: { post: PostDisplay; index: number }) => {
           onClick={async () => {
             const url = `${window.location.origin}/?post=${post.id}`;
             try {
-              if (navigator.share) {
-                await navigator.share({ title: 'Pi Club', text: post.content.slice(0, 80), url });
-              } else {
-                await navigator.clipboard.writeText(url);
-                toast.success('Link copiado!');
-              }
+              await navigator.clipboard.writeText(url);
+              toast.success('Link copiado!');
             } catch {
-              // user cancelled share
+              toast(url, { description: 'Copie o link manualmente' });
             }
           }}
           className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors ml-auto"

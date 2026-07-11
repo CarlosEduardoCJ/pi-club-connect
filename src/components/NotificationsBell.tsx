@@ -59,12 +59,25 @@ export default function NotificationsBell({ tone = 'on-primary' }: { tone?: 'on-
   const [items, setItems] = useState<Notif[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const handleClick = (n: Notif) => {
+  const resolveProfileId = async (n: Notif): Promise<string | null> => {
+    if (n.from_profile_id) return n.from_profile_id;
+    if (!n.from_user) return null;
+    const { data } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('name', n.from_user)
+      .maybeSingle();
+    return data?.id ?? null;
+  };
+
+  const handleClick = async (n: Notif) => {
     setOpen(false);
     switch (n.type) {
-      case 'follow':
-        if (n.from_profile_id) navigate(`/user/${n.from_profile_id}`);
+      case 'follow': {
+        const id = await resolveProfileId(n);
+        if (id) navigate(`/user/${id}`);
         break;
+      }
       case 'message':
         navigate('/chat');
         break;
