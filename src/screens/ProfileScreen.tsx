@@ -85,7 +85,7 @@ const ProfileScreen = () => {
 
           <div className="flex items-center justify-around py-3 border-t border-b border-border">
             <div className="text-center">
-              <p className="text-lg font-extrabold text-foreground">{user.posts_count}</p>
+              <p className="text-lg font-extrabold text-foreground">{userPosts.length}</p>
               <p className="text-xs text-muted-foreground">Posts</p>
             </div>
             <button onClick={() => setFollowDialog('followers')} className="text-center hover:opacity-80 transition-opacity">
