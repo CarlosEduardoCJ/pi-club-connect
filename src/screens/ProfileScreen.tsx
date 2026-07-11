@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import NotificationsBell from '@/components/NotificationsBell';
-import { useProfile, useProfileClubs, usePosts } from '@/hooks/useSupabaseData';
+import { useProfile, useProfileClubs, useUserPosts } from '@/hooks/useSupabaseData';
 import { useAuth } from '@/hooks/useAuth';
 import PostCard from '@/components/PostCard';
 import EditProfileDialog from '@/components/EditProfileDialog';
