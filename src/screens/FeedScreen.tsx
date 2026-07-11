@@ -1,16 +1,18 @@
-import { usePosts } from '@/hooks/useSupabaseData';
+import { useInfinitePosts } from '@/hooks/useSupabaseData';
 import NotificationsBell from '@/components/NotificationsBell';
 import { useSchoolView } from '@/hooks/useSchoolView';
 import PostCard from '@/components/PostCard';
 import CreatePostDialog from '@/components/CreatePostDialog';
 import GlobalAnnouncementBanner from '@/components/GlobalAnnouncementBanner';
+import { Button } from '@/components/ui/button';
 
 const FeedScreen = () => {
-  const { data: postsData, isLoading } = usePosts();
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfinitePosts();
   const { selectedSchool } = useSchoolView();
+  const allPosts = (data?.pages || []).flat();
   const posts = selectedSchool
-    ? (postsData || []).filter((p: any) => (p.school || p.clubs?.school) === selectedSchool)
-    : postsData;
+    ? allPosts.filter((p: any) => (p.school || p.clubs?.school) === selectedSchool)
+    : allPosts;
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -27,31 +29,42 @@ const FeedScreen = () => {
 
         {isLoading ? (
           <div className="text-center text-muted-foreground py-12">Carregando posts...</div>
-        ) : (posts || []).length === 0 ? (
+        ) : posts.length === 0 ? (
           <div className="text-center text-muted-foreground py-12">
             Nenhum post ainda. Seja o primeiro a compartilhar!
           </div>
         ) : (
-          (posts || []).map((post, i) => (
-            <PostCard
-              key={post.id}
-              post={{
-                id: post.id,
-                authorId: post.author_id,
-                authorName: post.profiles?.name || '',
-                authorUsername: post.profiles?.username || '',
-                authorAvatar: post.profiles?.avatar || '',
-                clubName: post.clubs?.name || 'Feed Geral',
-                content: post.content,
-                imageUrl: post.image_url || undefined,
-                likesCount: post.likes_count || 0,
-                commentsCount: post.comments_count || 0,
-                isLiked: false,
-                createdAt: post.created_at,
-              }}
-              index={i}
-            />
-          ))
+          <>
+            {posts.map((post, i) => (
+              <PostCard
+                key={post.id}
+                post={{
+                  id: post.id,
+                  authorId: post.author_id,
+                  authorName: post.profiles?.name || '',
+                  authorUsername: post.profiles?.username || '',
+                  authorAvatar: post.profiles?.avatar || '',
+                  clubName: post.clubs?.name || 'Feed Geral',
+                  content: post.content,
+                  imageUrl: post.image_url || undefined,
+                  likesCount: post.likes_count || 0,
+                  commentsCount: post.comments_count || 0,
+                  createdAt: post.created_at,
+                }}
+                index={i}
+              />
+            ))}
+            {hasNextPage && (
+              <Button
+                variant="outline"
+                onClick={() => fetchNextPage()}
+                disabled={isFetchingNextPage}
+                className="mt-2"
+              >
+                {isFetchingNextPage ? 'Carregando...' : 'Carregar mais'}
+              </Button>
+            )}
+          </>
         )}
       </main>
     </div>

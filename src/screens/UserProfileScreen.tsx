@@ -207,7 +207,6 @@ const UserProfileScreen = () => {
                   imageUrl: post.image_url || undefined,
                   likesCount: post.likes_count || 0,
                   commentsCount: post.comments_count || 0,
-                  isLiked: false,
                   createdAt: post.created_at,
                 }}
                 index={i}

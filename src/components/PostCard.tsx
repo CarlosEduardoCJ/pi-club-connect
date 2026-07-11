@@ -22,7 +22,7 @@ interface PostDisplay {
   imageUrl?: string;
   likesCount: number;
   commentsCount: number;
-  isLiked: boolean;
+  isLiked?: boolean;
   createdAt: string;
 }
 
@@ -138,7 +138,23 @@ const PostCard = ({ post, index }: { post: PostDisplay; index: number }) => {
           <span className={liked ? 'text-accent font-semibold' : 'text-muted-foreground'}>{likes}</span>
         </button>
         <CommentsSection postId={post.id} initialCount={post.commentsCount} onCountChange={setCommentsCount} />
-        <button className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors ml-auto">
+        <button
+          onClick={async () => {
+            const url = `${window.location.origin}/?post=${post.id}`;
+            try {
+              if (navigator.share) {
+                await navigator.share({ title: 'Pi Club', text: post.content.slice(0, 80), url });
+              } else {
+                await navigator.clipboard.writeText(url);
+                toast.success('Link copiado!');
+              }
+            } catch {
+              // user cancelled share
+            }
+          }}
+          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors ml-auto"
+          aria-label="Compartilhar"
+        >
           <Share2 className="w-4 h-4" />
         </button>
       </div>

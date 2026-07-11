@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Bell, Heart, UserPlus, MessageCircle, Trophy, CalendarDays } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -12,6 +13,7 @@ interface Notif {
   message: string;
   from_user: string;
   from_avatar: string | null;
+  from_profile_id: string | null;
   is_read: boolean | null;
   created_at: string;
 }
@@ -52,9 +54,33 @@ const timeAgo = (iso: string) => {
 export default function NotificationsBell({ tone = 'on-primary' }: { tone?: 'on-primary' | 'on-surface' }) {
   const { profileId } = useAuth();
   const { notifications, markNotificationsRead } = useUnreadCounts();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<Notif[]>([]);
   const [loading, setLoading] = useState(false);
+
+  const handleClick = (n: Notif) => {
+    setOpen(false);
+    switch (n.type) {
+      case 'follow':
+        if (n.from_profile_id) navigate(`/user/${n.from_profile_id}`);
+        break;
+      case 'message':
+        navigate('/chat');
+        break;
+      case 'competition':
+        navigate('/competitions');
+        break;
+      case 'event':
+        navigate('/events');
+        break;
+      case 'like':
+      case 'post':
+      default:
+        navigate('/');
+        break;
+    }
+  };
 
   useEffect(() => {
     if (!open || !profileId) return;
@@ -117,7 +143,8 @@ export default function NotificationsBell({ tone = 'on-primary' }: { tone?: 'on-
               return (
                 <li
                   key={n.id}
-                  className="flex items-start gap-3 px-4 py-3 border-b border-border/60 last:border-b-0"
+                  onClick={() => handleClick(n)}
+                  className="flex items-start gap-3 px-4 py-3 border-b border-border/60 last:border-b-0 cursor-pointer hover:bg-muted/50 transition-colors"
                 >
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${cls}`}>
                     <Icon className="w-4 h-4" />

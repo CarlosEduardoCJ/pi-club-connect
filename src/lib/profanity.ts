@@ -21,7 +21,7 @@ const BAD_WORDS = [
   "mocrea","mocreia","mocréia","mongoloide","mongolóide","mulata","mulato","naba","nazista",
   "nhaca","nojeira","nojenta","nojento","nojo","olhota","otaria","otario","otária","otário",
   "palhaco","palhaço","paspalha","paspalhao","paspalho","pau","peia","peido","pentelha","pentelho",
-  "perereca","pica","picao","picão","pilantra","pinel","pinto","pintudo","pintão","piranha",
+  "perereca","pica","picao","picão","pilantra","pinel","pintudo","pintão","piranha",
   "piroca","piroco","piru","pnc","porra","pqp","prequito","priquito","prostibulo",
   "prostituta","prostituto","punheta","punhetao","punhetão","pus","puta","puto",
   "puxa-saco","puxasaco","penis","pênis","rabao","rabão","rabo","rabuda","rabudao","rabudão",
