@@ -66,6 +66,27 @@ export const useUserPosts = (profileId: string | undefined) =>
     enabled: !!profileId,
   });
 
+const POSTS_PAGE_SIZE = 20;
+
+export const useInfinitePosts = () =>
+  useInfiniteQuery({
+    queryKey: ['posts-infinite'],
+    initialPageParam: 0,
+    queryFn: async ({ pageParam = 0 }) => {
+      const from = (pageParam as number) * POSTS_PAGE_SIZE;
+      const to = from + POSTS_PAGE_SIZE - 1;
+      const { data, error } = await supabase
+        .from('posts')
+        .select('*, profiles!posts_author_id_fkey(name, username, avatar), clubs!posts_club_id_fkey(name, school)')
+        .order('created_at', { ascending: false })
+        .range(from, to);
+      if (error) throw error;
+      return data || [];
+    },
+    getNextPageParam: (lastPage, allPages) =>
+      (lastPage?.length ?? 0) < POSTS_PAGE_SIZE ? undefined : allPages.length,
+  });
+
 export const useEvents = () =>
   useQuery({
     queryKey: ['events'],
