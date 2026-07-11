@@ -22,10 +22,10 @@ const ProfileScreen = () => {
   const [followDialog, setFollowDialog] = useState<null | 'followers' | 'following'>(null);
   const { data: user, isLoading: loadingUser } = useProfile(profileId || '');
   const { data: memberships } = useProfileClubs(profileId || '');
-  const { data: allPosts } = usePosts();
+  const { data: userPosts } = useUserPosts(profileId || undefined);
 
   const userClubs = (memberships || []).map(m => m.clubs).filter(Boolean);
-  const userPosts = (allPosts || []).filter(p => p.author_id === profileId);
+  const posts = userPosts || [];
 
   if (loadingUser || !user) {
     return (
